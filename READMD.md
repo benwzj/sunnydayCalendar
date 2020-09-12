@@ -1,0 +1,2 @@
+run project:
+yarn start
