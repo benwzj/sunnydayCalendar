@@ -1,23 +1,21 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import ExpoCalendar from './screens/ExpoCalendarSC'
+import 'react-native-gesture-handler';
+import React from 'react'
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import ReduxThunk from 'redux-thunk';
+
+import AppNavigator from './AppNavigator'
+import { calendarsReducer } from './store/reducers/calender';
+
+const rootReducers = combineReducers ({
+  calendars: calendarsReducer
+})
+const store = createStore (rootReducers, applyMiddleware(ReduxThunk))
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Day hello to sunnyday-calendar!</Text>
-      <ExpoCalendar />
-      <StatusBar style="auto" />
-    </View>
+    <Provider store = {store}>
+      <AppNavigator />
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
