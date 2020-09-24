@@ -10,8 +10,13 @@ const testIDs = {
   }
 }
 
-const RNCHomeSC = () => {
-  const [items, setItems] = useState ({})
+const RNCAgendaSC = () => {
+  const [items, setItems] = useState ({
+    '2012-05-22': [{name: 'item 1 - any js object'}],
+    '2012-05-23': [{name: 'item 2 - any js object', height: 120}],
+    //'2012-05-24': [],
+    '2012-05-25': [{name: 'item 3 - any js object', size: 100}, {name: 'any js object'}]
+  })
 
   const loadItems = (day) =>{
     // setTimeout(() => {
@@ -33,13 +38,13 @@ const RNCHomeSC = () => {
     //   Object.keys(items).forEach(key => {newItems[key] = items[key];});
     //   setItems(newItems)
     // }, 1000);
-    console.log( day )
-    setItems ({
-      '2012-05-22': [{name: 'item 1 - any js object'}],
-      '2012-05-23': [{name: 'item 2 - any js object', height: 120}],
-      //'2012-05-24': [],
-      '2012-05-25': [{name: 'item 3 - any js object', size: 100}, {name: 'any js object'}]
-    })
+    //console.log( day )
+    // setItems ({
+    //   '2012-05-22': [{name: 'item 1 - any js object'}],
+    //   '2012-05-23': [{name: 'item 2 - any js object', height: 120}],
+    //   //'2012-05-24': [],
+    //   '2012-05-25': [{name: 'item 3 - any js object', size: 100}, {name: 'any js object'}]
+    // })
   }
 
   const renderItem = (item) => {
@@ -50,7 +55,7 @@ const RNCHomeSC = () => {
         onPress={() => Alert.alert(item.name)}
       >
         <Text>{item.name}</Text>
-        <Avatar.Text size={34} label="XD" />
+        <Avatar.Text size={34} label="W" />
       </TouchableOpacity>
     )
   }
@@ -63,6 +68,13 @@ const RNCHomeSC = () => {
     );
   }
 
+  const dayClick = (day) =>{
+    setItems (items=>({
+      ...items, 
+      [day.dateString]:[{name: `new item for ${day.dateString}`}]
+    }))
+    //console.log( items )
+  }
   const rowHasChanged = (r1, r2) =>{
     return r1.name !== r2.name
   }
@@ -80,10 +92,10 @@ const RNCHomeSC = () => {
       // Callback that fires when the calendar is opened or closed
       onCalendarToggled={(calendarOpened) => {console.log('calendarOpened: ',calendarOpened)}}
       // Callback that gets called on day press
-      onDayPress={(day)=>{console.log('day pressed', day)}}
+      onDayPress={dayClick}
       // Callback that gets called when day changes while scrolling agenda list
       onDayChange={(day)=>{console.log('day changed', day)}}
-      selected={'2012-05-23'}
+      selected={timeToString(new Date())}
       renderItem={renderItem}
       renderEmptyDate={renderEmptyDate}
       rowHasChanged={rowHasChanged}
@@ -109,4 +121,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default RNCHomeSC
+export default RNCAgendaSC
