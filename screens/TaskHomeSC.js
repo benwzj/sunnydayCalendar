@@ -3,7 +3,6 @@ import {
   View,
   Image,
   TouchableOpacity,
-  AsyncStorage,
   ScrollView,
   Text,
   Dimensions,
@@ -13,157 +12,29 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
-import * as Calendar from 'expo-calendar';
+import * as ExpoCalendar from 'expo-calendar';
 import * as Localization from 'expo-localization';
 import Constants from 'expo-constants';
-
 import CalendarStrip from 'react-native-calendar-strip';
 import DateTimePicker from 'react-native-modal-datetime-picker';
-import { Context } from '../data/Context';
-import { Task } from '../components/Task';
 
-const styles = StyleSheet.create({
-  taskListContent: {
-    height: 100,
-    width: 327,
-    alignSelf: 'center',
-    borderRadius: 10,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    marginTop: 10,
-    marginBottom: 10,
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 5,
-    shadowOpacity: 0.2,
-    elevation: 3,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  viewTask: {
-    position: 'absolute',
-    bottom: 40,
-    right: 17,
-    height: 60,
-    width: 60,
-    backgroundColor: '#2E66E7',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#2E66E7',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 30,
-    shadowOpacity: 0.5,
-    elevation: 5,
-    zIndex: 999,
-  },
-  deleteButton: {
-    backgroundColor: '#ff6347',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
-  updateButton: {
-    backgroundColor: '#2E66E7',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-    marginRight: 20,
-  },
-  sepeerator: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  notesContent: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  learn: {
-    height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
-    justifyContent: 'center',
-    borderRadius: 5,
-  },
-  design: {
-    height: 23,
-    width: 59,
-    backgroundColor: '#62CCFB',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  readBook: {
-    height: 23,
-    width: 83,
-    backgroundColor: '#4CD565',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  title: {
-    height: 25,
-    borderColor: '#5DD976',
-    borderLeftWidth: 1,
-    paddingLeft: 8,
-    fontSize: 19,
-  },
-  taskContainer: {
-    height: 475,
-    width: 327,
-    alignSelf: 'center',
-    borderRadius: 20,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 20,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    padding: 22,
-  },
-});
+import { Context } from '../data/Context';
+import CModal from '../components/CModal';
 
 export default class TaskHomeSC extends Component {
   state = {
-    datesWhitelist: [
-      {
-        start: moment(),
-        end: moment().add(365, 'days'), // total 4 days enabled
-      },
-    ],
     todoList: [],
     markedDate: [],
     currentDate: `${moment().format('YYYY')}-${moment().format(
-      'MM'
-    )}-${moment().format('DD')}`,
+        'MM')}-${moment().format('DD')}`,
     isModalVisible: false,
     selectedTask: null,
     isDateTimePickerVisible: false,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this._handleDeletePreviousDayTask();
   }
 
@@ -184,7 +55,7 @@ export default class TaskHomeSC extends Component {
           if (checkedDate > 0) {
             item.todoList.forEach(async listValue => {
               try {
-                await Calendar.deleteEventAsync(
+                await ExpoCalendar.deleteEventAsync(
                   listValue.alarm.createEventAsyncRes.toString()
                 );
               } catch (error) {
@@ -205,10 +76,9 @@ export default class TaskHomeSC extends Component {
   };
 
   _handleModalVisible = () => {
-    const { isModalVisible } = this.state;
-    this.setState({
-      isModalVisible: !isModalVisible,
-    });
+    this.setState ((state)=>({
+      isModalVisible: !state.isModalVisible
+    }));
   };
 
   _updateCurrentTask = async currentDate => {
@@ -288,7 +158,7 @@ export default class TaskHomeSC extends Component {
 
     if (selectedTask.alarm.createEventAsyncRes === '') {
       try {
-        const createEventAsyncRes = await Calendar.createEventAsync(
+        const createEventAsyncRes = await ExpoCalendar.createEventAsync(
           calendarId.toString(),
           event
         );
@@ -302,7 +172,7 @@ export default class TaskHomeSC extends Component {
       }
     } else {
       try {
-        await Calendar.updateEventAsync(
+        await ExpoCalendar.updateEventAsync(
           selectedTask.alarm.createEventAsyncRes.toString(),
           event
         );
@@ -317,7 +187,7 @@ export default class TaskHomeSC extends Component {
     console.log(selectedTask.alarm);
 
     try {
-      await Calendar.deleteEventAsync(selectedTask.alarm.createEventAsyncRes);
+      await ExpoCalendar.deleteEventAsync(selectedTask.alarm.createEventAsyncRes);
 
       const updateTask = { ...selectedTask };
       updateTask.alarm.createEventAsyncRes = '';
@@ -334,7 +204,7 @@ export default class TaskHomeSC extends Component {
 
     if (selectedTask.alarm.createEventAsyncRes) {
       try {
-        await Calendar.getEventAsync(
+        await ExpoCalendar.getEventAsync(
           selectedTask.alarm.createEventAsyncRes.toString()
         );
       } catch (error) {
@@ -344,7 +214,7 @@ export default class TaskHomeSC extends Component {
   };
 
   _findCalendars = async () => {
-    const calendars = await Calendar.getCalendarsAsync();
+    const calendars = await ExpoCalendar.getCalendarsAsync();
 
     return calendars;
   };
@@ -353,7 +223,7 @@ export default class TaskHomeSC extends Component {
     const calendars = await this._findCalendars();
     const newCalendar = {
       title: 'test',
-      entityType: Calendar.EntityTypes.EVENT,
+      entityType: ExpoCalendar.EntityTypes.EVENT,
       color: '#2196F3',
       sourceId:
         Platform.OS === 'ios'
@@ -364,17 +234,17 @@ export default class TaskHomeSC extends Component {
         Platform.OS === 'android'
           ? {
               name: calendars.find(
-                cal => cal.accessLevel === Calendar.CalendarAccessLevel.OWNER
+                cal => cal.accessLevel === ExpoCalendar.CalendarAccessLevel.OWNER
               ).source.name,
               isLocalAccount: true,
             }
           : undefined,
       name: 'test',
-      accessLevel: Calendar.CalendarAccessLevel.OWNER,
+      accessLevel: ExpoCalendar.CalendarAccessLevel.OWNER,
       ownerAccount:
         Platform.OS === 'android'
           ? calendars.find(
-              cal => cal.accessLevel === Calendar.CalendarAccessLevel.OWNER
+              cal => cal.accessLevel === ExpoCalendar.CalendarAccessLevel.OWNER
             ).ownerAccount
           : undefined,
     };
@@ -382,7 +252,7 @@ export default class TaskHomeSC extends Component {
     let calendarId = null;
 
     try {
-      calendarId = await Calendar.createCalendarAsync(newCalendar);
+      calendarId = await ExpoCalendar.createCalendarAsync(newCalendar);
     } catch (e) {
       Alert.alert(e.message);
     }
@@ -393,7 +263,6 @@ export default class TaskHomeSC extends Component {
   render() {
     const {
       state: {
-        datesWhitelist,
         markedDate,
         todoList,
         isModalVisible,
@@ -409,7 +278,7 @@ export default class TaskHomeSC extends Component {
         {value => (
           <>
             {selectedTask !== null && (
-              <Task isModalVisible={isModalVisible}>
+              <CModal isModalVisible={isModalVisible}>
                 <DateTimePicker
                   isVisible={isDateTimePickerVisible}
                   onConfirm={this._handleDatePicked}
@@ -597,7 +466,7 @@ export default class TaskHomeSC extends Component {
                     </TouchableOpacity>
                   </View>
                 </View>
-              </Task>
+              </CModal>
             )}
             <View
               style={{
@@ -640,7 +509,12 @@ export default class TaskHomeSC extends Component {
                 highlightDateNameStyle={{ color: '#2E66E7' }}
                 disabledDateNameStyle={{ color: 'grey' }}
                 disabledDateNumberStyle={{ color: 'grey', paddingTop: 10 }}
-                datesWhitelist={datesWhitelist}
+                datesWhitelist={[
+                  {
+                    start: moment(),
+                    end: moment().add(365, 'days'), 
+                  },
+                ]}
                 iconLeft={require('../assets/left-arrow.png')}
                 iconRight={require('../assets/right-arrow.png')}
                 iconContainer={{ flex: 0.1 }}
@@ -778,3 +652,126 @@ export default class TaskHomeSC extends Component {
     );
   }
 }
+
+
+const styles = StyleSheet.create({
+  taskListContent: {
+    height: 100,
+    width: 327,
+    alignSelf: 'center',
+    borderRadius: 10,
+    shadowColor: '#2E66E7',
+    backgroundColor: '#ffffff',
+    marginTop: 10,
+    marginBottom: 10,
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    shadowRadius: 5,
+    shadowOpacity: 0.2,
+    elevation: 3,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  viewTask: {
+    position: 'absolute',
+    bottom: 40,
+    right: 17,
+    height: 60,
+    width: 60,
+    backgroundColor: '#2E66E7',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#2E66E7',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 30,
+    shadowOpacity: 0.5,
+    elevation: 5,
+    zIndex: 999,
+  },
+  deleteButton: {
+    backgroundColor: '#ff6347',
+    width: 100,
+    height: 38,
+    alignSelf: 'center',
+    marginTop: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+  },
+  updateButton: {
+    backgroundColor: '#2E66E7',
+    width: 100,
+    height: 38,
+    alignSelf: 'center',
+    marginTop: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+    marginRight: 20,
+  },
+  sepeerator: {
+    height: 0.5,
+    width: '100%',
+    backgroundColor: '#979797',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  notesContent: {
+    height: 0.5,
+    width: '100%',
+    backgroundColor: '#979797',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  learn: {
+    height: 23,
+    width: 51,
+    backgroundColor: '#F8D557',
+    justifyContent: 'center',
+    borderRadius: 5,
+  },
+  design: {
+    height: 23,
+    width: 59,
+    backgroundColor: '#62CCFB',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  readBook: {
+    height: 23,
+    width: 83,
+    backgroundColor: '#4CD565',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  title: {
+    height: 25,
+    borderColor: '#5DD976',
+    borderLeftWidth: 1,
+    paddingLeft: 8,
+    fontSize: 19,
+  },
+  taskContainer: {
+    height: 475,
+    width: 327,
+    alignSelf: 'center',
+    borderRadius: 20,
+    shadowColor: '#2E66E7',
+    backgroundColor: '#ffffff',
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    shadowRadius: 20,
+    shadowOpacity: 0.2,
+    elevation: 5,
+    padding: 22,
+  },
+});

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
-import * as Calendar from 'expo-calendar';
+import * as ExpoCalendar from 'expo-calendar';
 import * as Localization from 'expo-localization';
 import Constants from 'expo-constants';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -147,7 +147,7 @@ export default class CreateTaskSC extends Component {
     createEventAsyncRes: '',
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       this._keyboardDidShow
@@ -185,6 +185,7 @@ export default class CreateTaskSC extends Component {
   };
 
   synchronizeCalendar = async value => {
+    console.log('synchronizeCalendar--- ',value)
     const { navigation, route } = this.props;
     const { createNewCalendar } = route.params;
     const calendarId = await createNewCalendar();
@@ -218,7 +219,7 @@ export default class CreateTaskSC extends Component {
     };
 
     try {
-      const createEventAsyncRes = await Calendar.createEventAsync(
+      const createEventAsyncRes = await ExpoCalendar.createEventAsync(
         calendarId.toString(),
         event
       );
@@ -234,6 +235,7 @@ export default class CreateTaskSC extends Component {
   _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
 
   _handleCreateEventData = async value => {
+    console.log('_handleCreateEventData: ', value, value.updateTodo)
     const {
       state: {
         currentDay,
@@ -279,10 +281,10 @@ export default class CreateTaskSC extends Component {
         ],
       },
     };
-
+    //console.log('value: ', value, value.updateTodo)
     await value.updateTodo(creatTodo);
     await updateCurrentTask(currentDate);
-    navigation.navigate('Home');
+    navigation.navigate('TaskHomeSC');
   };
 
   _handleDatePicked = date => {
@@ -318,7 +320,7 @@ export default class CreateTaskSC extends Component {
 
     return (
       <Context.Consumer>
-        {value => (
+        {todoStore => (
           <>
             <DateTimePicker
               isVisible={isDateTimePickerVisible}
@@ -495,11 +497,13 @@ export default class CreateTaskSC extends Component {
                       },
                     ]}
                     onPress={async () => {
+                      console.log('OnPress:  --- ', todoStore )
                       if (isAlarmSet) {
-                        await this.synchronizeCalendar(value);
+                        
+                        await this.synchronizeCalendar(todoStore);
                       }
                       if (!isAlarmSet) {
-                        this._handleCreateEventData(value);
+                        this._handleCreateEventData(todoStore);
                       }
                     }}
                   >
