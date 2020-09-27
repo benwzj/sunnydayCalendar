@@ -1,9 +1,13 @@
-import React, { useEffect, useCallback } from 'react'
-import { View, Text, Button, Platform, StyleSheet, TouchableHighlight,
-        SafeAreaView } from 'react-native'
-import * as ExpoCalendar from 'expo-calendar'
-import { useSelector, useDispatch } from 'react-redux';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useCallback, useLayoutEffect } from 'react'
+import { View, 
+  Text, 
+  Button, 
+  Platform, 
+  StyleSheet, 
+  TouchableHighlight,
+  SafeAreaView } from 'react-native'
+import { useSelector, useDispatch } from 'react-redux'
+import { useFocusEffect } from '@react-navigation/native'
 
 import CFlatlist, { SwipeableRow } from '../components/CFlatlist'
 import { setupCalendars, deleteCalendar, addCalendar } from '../store/actions/calendars'
@@ -11,27 +15,12 @@ import { setupCalendars, deleteCalendar, addCalendar } from '../store/actions/ca
 const CalendarListSC = (props) => {
   const dispatch = useDispatch ()
   const calendars = useSelector ( state => state.calendars.array )
+  const permission = useSelector ( state => state.calendars.permission )
   const { navigation } = props
 
-  console.log ('CalendarListSC -----------')
+  console.log ('CalendarListSC -----------permission: ',permission)
 
-  //const [calendarData, setCalendarData] = useState (null)
-  useEffect ( () => {
-    ( async () => {
-      const { status: calePerm } = await ExpoCalendar.requestCalendarPermissionsAsync();
-      const { status: remiPerm } = await ExpoCalendar.requestRemindersPermissionsAsync()
-      if (calePerm === 'granted') {
-        console.log('requestCalendarPermissionsAsync is granted!');
-      }
-      if (remiPerm === 'granted') {
-        console.log('requestRemindersPermissionsAsync is granted!');
-      }
-    } )();
-    console.log('useEffect --')
-    dispatch ( setupCalendars() )
-  }, []);
-
-  React.useLayoutEffect (() => {
+  useLayoutEffect (() => {
     navigation.setOptions({
       headerRight: () => (
         <Button 
@@ -42,14 +31,13 @@ const CalendarListSC = (props) => {
     })
   }, [navigation])
 
-  // useFocusEffect (
-  //   useCallback ( () => {
-  //     ( async () =>{
-  //       console.log('useFocusEffect --')
-  //       await dispatch ( setupCalendars() )
-  //     })()
-  //   }, [dispatch] )
-  // );
+  useFocusEffect (
+    useCallback ( () => {
+      ( async () =>{
+        await dispatch ( setupCalendars() )
+      })()
+    }, [dispatch] )
+  );
 
   const detailHandler = (calendarId, calendarTitle) =>{
     navigation.navigate ('ExpoCalendarDetailSC', {

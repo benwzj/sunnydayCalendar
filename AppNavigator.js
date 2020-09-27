@@ -1,14 +1,16 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { View, StyleSheet, Button } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { useDispatch } from 'react-redux'
 
 import ExpoCalendarListSC from './screens/ExpoCalendarListSC'
 import ExpoCalendarDetailSC from './screens/ExpoCalendarDetailSC'
 import RNCAgendaSC from './screens/RNCAgendaSC'
 import TaskHomeSC from './screens/TaskHomeSC'
-import CreateTaskSC from './screens/CreateTaskSC'
+import TaskCreateSC from './screens/TaskCreateSC'
+import {askCalendarPermission} from './store/actions/calendars'
 
 const Stack = createStackNavigator();
 const ExpoCalendarNavigator = () => {
@@ -43,6 +45,7 @@ const RNCalendarNavigator = () => {
 }
 
 const TasksNavigator = () =>{
+
   return (
     <Stack.Navigator>
       <Stack.Screen 
@@ -51,8 +54,8 @@ const TasksNavigator = () =>{
         title = 'Task Home'
       />
       <Stack.Screen 
-        name = 'CreateTaskSC'
-        component = {CreateTaskSC}
+        name = 'TaskCreateSC'
+        component = {TaskCreateSC}
         title = 'Create Task'
       />
     </Stack.Navigator>
@@ -62,7 +65,11 @@ const TasksNavigator = () =>{
 const Tab = createBottomTabNavigator();
 
 const AppNavigator = () => {
-
+  const dispatch = useDispatch ()
+  useEffect ( () => {
+    dispatch (askCalendarPermission())
+  }, []);
+  
   return (
     <NavigationContainer>
       <Tab.Navigator>

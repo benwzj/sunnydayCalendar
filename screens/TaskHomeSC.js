@@ -21,7 +21,9 @@ import CalendarStrip from 'react-native-calendar-strip';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 
 import { Context } from '../data/Context';
-import CModal from '../components/CModal';
+import CModal from '../components/CModal'
+import TaskBrief from '../components/TaskBrief'
+import CButton from '../components/CButton'
 
 export default class TaskHomeSC extends Component {
   state = {
@@ -275,7 +277,7 @@ export default class TaskHomeSC extends Component {
 
     return (
       <Context.Consumer>
-        {value => (
+        {todoStore => (
           <>
             {selectedTask !== null && (
               <CModal isModalVisible={isModalVisible}>
@@ -296,7 +298,7 @@ export default class TaskHomeSC extends Component {
                       });
                     }}
                     value={selectedTask.title}
-                    placeholder="What do you need to do?"
+                    placeholder="What is in your mind!?"
                   />
                   <Text
                     style={{
@@ -412,58 +414,41 @@ export default class TaskHomeSC extends Component {
                   <View
                     style={{
                       flexDirection: 'row',
-                      justifyContent: 'center',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
                   >
-                    <TouchableOpacity
-                      onPress={async () => {
+                    <CButton 
+                      onPress = {async () => {
+                        console.log('todoStore: ', todoStore )
                         this._handleModalVisible();
                         if (selectedTask.alarm.isOn) {
                           await this._updateAlarm();
                         } else {
                           await this._deleteAlarm();
                         }
-                        await value.updateSelectedTask({
+                        await todoStore.updateSelectedTask({
                           date: currentDate,
                           todo: selectedTask,
                         });
                         this._updateCurrentTask(currentDate);
                       }}
-                      style={styles.updateButton}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}
-                      >
-                        UPDATE
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={async () => {
+                      title = "UPDATE"
+                      style = {{backgroundColor: '#2E66E7'}}
+                    />
+                    <CButton 
+                      onPress = {async () => {
                         this._handleModalVisible();
                         this._deleteAlarm();
-                        await value.deleteSelectedTask({
+                        await todoStore.deleteSelectedTask({
                           date: currentDate,
                           todo: selectedTask,
                         });
                         this._updateCurrentTask(currentDate);
                       }}
-                      style={styles.deleteButton}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}
-                      >
-                        DELETE
-                      </Text>
-                    </TouchableOpacity>
+                      title = "DELETE"
+                      style = {{backgroundColor: '#ff6347'}}
+                    />
                   </View>
                 </View>
               </CModal>
@@ -531,20 +516,17 @@ export default class TaskHomeSC extends Component {
               />
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate('CreateTaskSC', {
+                  navigation.navigate('TaskCreateSC', {
                     updateCurrentTask: this._updateCurrentTask,
                     currentDate,
                     createNewCalendar: this._createNewCalendar,
                   })
                 }
-                style={styles.viewTask}
+                style={styles.CreateTask}
               >
                 <Image
                   source={require('../assets/plus.png')}
-                  style={{
-                    height: 30,
-                    width: 30,
-                  }}
+                  style={{height: 30, width: 30}}
                 />
               </TouchableOpacity>
               <View
@@ -559,89 +541,19 @@ export default class TaskHomeSC extends Component {
                   }}
                 >
                   {todoList.map(item => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        this.setState(
-                          {
-                            selectedTask: item,
-                            isModalVisible: true,
-                          },
-                          () => {
-                            this._getEvent();
-                          }
-                        );
+                    <TaskBrief 
+                      onTaskPress = {() => { this.setState(
+                        {
+                          selectedTask: item,
+                          isModalVisible: true,
+                        },
+                        () => {
+                          this._getEvent();
+                        })
                       }}
-                      key={item.key}
-                      style={styles.taskListContent}
-                    >
-                      <View
-                        style={{
-                          marginLeft: 13,
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <View
-                            style={{
-                              height: 12,
-                              width: 12,
-                              borderRadius: 6,
-                              backgroundColor: item.color,
-                              marginRight: 8,
-                            }}
-                          />
-                          <Text
-                            style={{
-                              color: '#554A4C',
-                              fontSize: 20,
-                              fontWeight: '700',
-                            }}
-                          >
-                            {item.title}
-                          </Text>
-                        </View>
-                        <View>
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              marginLeft: 20,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: '#BBBBBB',
-                                fontSize: 14,
-                                marginRight: 5,
-                              }}
-                            >{`${moment(item.alarm.time).format(
-                              'YYYY'
-                            )}/${moment(item.alarm.time).format('MM')}/${moment(
-                              item.alarm.time
-                            ).format('DD')}`}</Text>
-                            <Text
-                              style={{
-                                color: '#BBBBBB',
-                                fontSize: 14,
-                              }}
-                            >
-                              {item.notes}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                      <View
-                        style={{
-                          height: 80,
-                          width: 5,
-                          backgroundColor: item.color,
-                          borderRadius: 5,
-                        }}
-                      />
-                    </TouchableOpacity>
+                      item = {item}
+                      key = {item.key}
+                    />
                   ))}
                 </ScrollView>
               </View>
@@ -655,27 +567,7 @@ export default class TaskHomeSC extends Component {
 
 
 const styles = StyleSheet.create({
-  taskListContent: {
-    height: 100,
-    width: 327,
-    alignSelf: 'center',
-    borderRadius: 10,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    marginTop: 10,
-    marginBottom: 10,
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 5,
-    shadowOpacity: 0.2,
-    elevation: 3,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  viewTask: {
+  CreateTask: {
     position: 'absolute',
     bottom: 40,
     right: 17,
@@ -694,25 +586,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     elevation: 5,
     zIndex: 999,
-  },
-  deleteButton: {
-    backgroundColor: '#ff6347',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
-  updateButton: {
-    backgroundColor: '#2E66E7',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-    marginRight: 20,
   },
   sepeerator: {
     height: 0.5,

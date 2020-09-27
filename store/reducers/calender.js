@@ -15,10 +15,18 @@ Object {
   },
 */
 
-import { SETUP_CALENDARS, DELETE_CALENDAR, ADD_CALENDAR } from '../actions/calendars'
+import { 
+  SETUP_CALENDARS, 
+  DELETE_CALENDAR, 
+  ADD_CALENDAR,
+  ASK_CALENDAR_PERMISSTION } from '../actions/calendars'
 
 const initialState = {
-  array: []
+  array: [],
+  permission: {
+    statusCale: '',
+    statusRemi: ''
+  }
 };
 
 export const calendarsReducer = (state = initialState, action) =>{
@@ -30,10 +38,14 @@ export const calendarsReducer = (state = initialState, action) =>{
       //console.log('reducer -- inside',calendars)
 
       if ( calendars ){
-        return { array: calendars }
+        return { ...state, array: calendars }
       }
       return state
-      
+    case ASK_CALENDAR_PERMISSTION:
+      return {
+        ...state,
+        permission: action.payload
+      }
     default: 
       return state
   }

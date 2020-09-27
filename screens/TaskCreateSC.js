@@ -24,107 +24,8 @@ import { Context } from '../data/Context';
 const { width: vw } = Dimensions.get('window');
 // moment().format('YYYY/MM/DD')
 
-const styles = StyleSheet.create({
-  createTaskButton: {
-    width: 252,
-    height: 48,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
-  seperator: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  notes: {
-    color: '#9CAAC4',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  notesContent: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  learn: {
-    height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
-    justifyContent: 'center',
-    borderRadius: 5,
-  },
-  design: {
-    height: 23,
-    width: 59,
-    backgroundColor: '#62CCFB',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  readBook: {
-    height: 23,
-    width: 83,
-    backgroundColor: '#4CD565',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  title: {
-    height: 25,
-    borderColor: '#5DD976',
-    borderLeftWidth: 1,
-    paddingLeft: 8,
-    fontSize: 19,
-  },
-  taskContainer: {
-    height: 400,
-    width: 327,
-    alignSelf: 'center',
-    borderRadius: 20,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 20,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    padding: 22,
-  },
-  calenderContainer: {
-    marginTop: 30,
-    width: 350,
-    height: 350,
-    alignSelf: 'center',
-  },
-  newTask: {
-    alignSelf: 'center',
-    fontSize: 20,
-    width: 120,
-    height: 25,
-    textAlign: 'center',
-  },
-  backButton: {
-    flexDirection: 'row',
-    marginTop: 60,
-    width: '100%',
-    alignItems: 'center',
-  },
-  container: {
-    flex: 1,
-    paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#eaeef7',
-  },
-});
 
-export default class CreateTaskSC extends Component {
+export default class TaskCreateSC extends Component {
   state = {
     selectedDay: {
       [`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format(
@@ -185,9 +86,7 @@ export default class CreateTaskSC extends Component {
   };
 
   synchronizeCalendar = async value => {
-    console.log('synchronizeCalendar--- ',value)
-    const { navigation, route } = this.props;
-    const { createNewCalendar } = route.params;
+    const { createNewCalendar } = this.props.route.params;
     const calendarId = await createNewCalendar();
     try {
       const createEventAsyncRes = await this._addEventsToCalendar(calendarId);
@@ -235,7 +134,6 @@ export default class CreateTaskSC extends Component {
   _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
 
   _handleCreateEventData = async value => {
-    console.log('_handleCreateEventData: ', value, value.updateTodo)
     const {
       state: {
         currentDay,
@@ -526,3 +424,104 @@ export default class CreateTaskSC extends Component {
     );
   }
 }
+
+
+const styles = StyleSheet.create({
+  createTaskButton: {
+    width: 252,
+    height: 48,
+    alignSelf: 'center',
+    marginTop: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+  },
+  seperator: {
+    height: 0.5,
+    width: '100%',
+    backgroundColor: '#979797',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  notes: {
+    color: '#9CAAC4',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  notesContent: {
+    height: 0.5,
+    width: '100%',
+    backgroundColor: '#979797',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  learn: {
+    height: 23,
+    width: 51,
+    backgroundColor: '#F8D557',
+    justifyContent: 'center',
+    borderRadius: 5,
+  },
+  design: {
+    height: 23,
+    width: 59,
+    backgroundColor: '#62CCFB',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  readBook: {
+    height: 23,
+    width: 83,
+    backgroundColor: '#4CD565',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  title: {
+    height: 25,
+    borderColor: '#5DD976',
+    borderLeftWidth: 1,
+    paddingLeft: 8,
+    fontSize: 19,
+  },
+  taskContainer: {
+    height: 400,
+    width: 327,
+    alignSelf: 'center',
+    borderRadius: 20,
+    shadowColor: '#2E66E7',
+    backgroundColor: '#ffffff',
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    shadowRadius: 20,
+    shadowOpacity: 0.2,
+    elevation: 5,
+    padding: 22,
+  },
+  calenderContainer: {
+    marginTop: 30,
+    width: 350,
+    height: 350,
+    alignSelf: 'center',
+  },
+  newTask: {
+    alignSelf: 'center',
+    fontSize: 20,
+    width: 120,
+    height: 25,
+    textAlign: 'center',
+  },
+  backButton: {
+    flexDirection: 'row',
+    marginTop: 60,
+    width: '100%',
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#eaeef7',
+  },
+});
