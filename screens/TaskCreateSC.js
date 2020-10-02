@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   Image,
@@ -10,7 +10,7 @@ import {
   Keyboard,
   Switch,
   StyleSheet,
-  Alert,
+  Alert
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
@@ -19,92 +19,100 @@ import * as Localization from 'expo-localization';
 import Constants from 'expo-constants';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import uuid from 'uuid';
+import {useDispatch, useSelector} from 'react-redux'
+
 import { Context } from '../data/Context';
+import CButton from '../components/CButton'
+import {
+  setupTasks, 
+  addTask,
+  updateTask, 
+  deleteTask
+} from '../store/actions/tasks'
 
 const { width: vw } = Dimensions.get('window');
 // moment().format('YYYY/MM/DD')
 
-
-export default class TaskCreateSC extends Component {
-  state = {
-    selectedDay: {
-      [`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format(
-        'DD'
-      )}`]: {
-        selected: true,
-        selectedColor: '#2E66E7',
-      },
+const TaskCreateSC =(props) => {
+  let createdEventID = ''
+  const dispatch = useDispatch ()
+  const tasks = useSelector (state => state.tasks)
+  const [keyboardHeight, setKeyboardHeight] = useState (0)
+  const [visibleHeight, setVisibleHeight] = useState (Dimensions.get('window').height)
+  const [isAlarmSet, setIsAlermSet] = useState (false)
+  const [taskText, setTaskText] = useState ('')
+  const [notesText, setNotesText] = useState ('')
+  const [alarmTime, setAlarmTime] = useState (moment().format())
+  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
+  const [selectedDay, setSelectedDay] = useState({
+    [`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format(
+      'DD'
+    )}`]: {
+      selected: true,
+      selectedColor: '#2E66E7',
     },
-    currentDay: moment().format(),
-    taskText: '',
-    notesText: '',
-    keyboardHeight: 0,
-    visibleHeight: Dimensions.get('window').height,
-    isAlarmSet: false,
-    alarmTime: moment().format(),
-    isDateTimePickerVisible: false,
-    timeType: '',
-    creatTodo: {},
-    createEventAsyncRes: '',
+  })
+  const [currentDay, setCurrentDay] = useState( moment().format())
+  const { navigation, route } = props
+
+  useEffect(() => {
+    Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
+    Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
+
+    // cleanup function
+    return () => {
+      Keyboard.removeListener("keyboardDidShow", _keyboardDidShow);
+      Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
+    };
+  }, [])
+
+  const _keyboardDidShow = e => {
+    setKeyboardHeight( e.endCoordinates.height )
+    setVisibleHeight (
+      Dimensions.get('window').height - e.endCoordinates.height - 30)
   };
 
-  UNSAFE_componentWillMount() {
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this._keyboardDidShow
-    );
-    this.keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      this._keyboardDidHide
-    );
-  }
-
-  componentWillUnmount() {
-    Keyboard.removeListener('keyboardDidShow', this._keyboardDidShow);
-    Keyboard.removeListener('keyboardDidHide', this._keyboardDidHide);
-  }
-
-  _keyboardDidShow = e => {
-    this.setState({
-      keyboardHeight: e.endCoordinates.height,
-      visibleHeight:
-        Dimensions.get('window').height - e.endCoordinates.height - 30,
-    });
+  const _keyboardDidHide = () => {
+    setVisibleHeight ( Dimensions.get('window').height )
   };
 
-  _keyboardDidHide = () => {
-    this.setState({
-      visibleHeight: Dimensions.get('window').height,
-    });
-  };
-
-  handleAlarmSet = () => {
-    const { isAlarmSet } = this.state;
-    this.setState({
-      isAlarmSet: !isAlarmSet,
-    });
-  };
-
-  synchronizeCalendar = async value => {
-    const { createNewCalendar } = this.props.route.params;
+  const _synchronizeCalendar = async value => {
+    const { createNewCalendar } = route.params;
     const calendarId = await createNewCalendar();
     try {
-      const createEventAsyncRes = await this._addEventsToCalendar(calendarId);
-      this.setState(
-        {
-          createEventAsyncRes,
-        },
-        () => {
-          this._handleCreateEventData(value);
-        }
-      );
+      createdEventID = await _addEventsToCalendar(calendarId);
+
+      _handleCreateEventData(value);
+
     } catch (e) {
       Alert.alert(e.message);
     }
   };
 
-  _addEventsToCalendar = async calendarId => {
-    const { taskText, notesText, alarmTime } = this.state;
+  const _handleAlarmSet = () => {
+    setIsAlermSet(previousState => !previousState)
+  };
+
+  const createTask = () =>{
+    console.log( 'createTask -- ', tasks)
+    const task = {
+      calendarId: tasks.calendarId,
+      title: taskText,
+      notes: notesText,
+      startTime: moment(alarmTime).add(0, 'm').toDate(),
+      alarmOn: true,
+      color: `rgb(${Math.floor(
+        Math.random() * Math.floor(256)
+      )},${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+        Math.random() * Math.floor(256)
+      )})`,
+    }
+    console.log( 'createTask -- ', task)
+    dispatch ( addTask(task) )
+    navigation.navigate ('TaskHomeSC');
+  }
+
+  const _addEventsToCalendar = async calendarId => {
     const event = {
       title: taskText,
       notes: notesText,
@@ -118,33 +126,23 @@ export default class TaskCreateSC extends Component {
     };
 
     try {
-      const createEventAsyncRes = await ExpoCalendar.createEventAsync(
+      const eventID = await ExpoCalendar.createEventAsync(
         calendarId.toString(),
         event
       );
 
-      return createEventAsyncRes;
+      return eventID;
     } catch (error) {
       console.log(error);
     }
   };
 
-  _showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
+  const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
 
-  _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
+  const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
 
-  _handleCreateEventData = async value => {
-    const {
-      state: {
-        currentDay,
-        taskText,
-        notesText,
-        isAlarmSet,
-        alarmTime,
-        createEventAsyncRes,
-      },
-      props: { navigation, route },
-    } = this;
+  const _handleCreateEventData = async value => {
+
     const { updateCurrentTask, currentDate } = route.params;
     const creatTodo = {
       key: uuid(),
@@ -159,7 +157,7 @@ export default class TaskCreateSC extends Component {
           alarm: {
             time: alarmTime,
             isOn: isAlarmSet,
-            createEventAsyncRes,
+            createdEventID
           },
           color: `rgb(${Math.floor(
             Math.random() * Math.floor(256)
@@ -185,8 +183,8 @@ export default class TaskCreateSC extends Component {
     navigation.navigate('TaskHomeSC');
   };
 
-  _handleDatePicked = date => {
-    const { currentDay } = this.state;
+  const _handleDatePicked = date => {
+
     const selectedDatePicked = currentDay;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
@@ -194,39 +192,21 @@ export default class TaskCreateSC extends Component {
       .hour(hour)
       .minute(minute);
 
-    this.setState({
-      alarmTime: newModifiedDay,
-    });
+      setAlarmTime(newModifiedDay)
 
-    this._hideDateTimePicker();
+
+    _hideDateTimePicker();
   };
-
-  render() {
-    const {
-      state: {
-        selectedDay,
-        currentDay,
-        taskText,
-        visibleHeight,
-        notesText,
-        isAlarmSet,
-        alarmTime,
-        isDateTimePickerVisible,
-      },
-      props: { navigation },
-    } = this;
-
     return (
       <Context.Consumer>
         {todoStore => (
           <>
             <DateTimePicker
               isVisible={isDateTimePickerVisible}
-              onConfirm={this._handleDatePicked}
-              onCancel={this._hideDateTimePicker}
+              onConfirm={_handleDatePicked}
+              onCancel={_hideDateTimePicker}
               mode="time"
             />
-
             <View style={styles.container}>
               <View
                 style={{
@@ -251,16 +231,14 @@ export default class TaskCreateSC extends Component {
                       pagingEnabled
                       calendarWidth={350}
                       onDayPress={day => {
-                        this.setState({
-                          selectedDay: {
+                          setSelectedDay ({
                             [day.dateString]: {
                               selected: true,
                               selectedColor: '#2E66E7',
                             },
-                          },
-                          currentDay: day.dateString,
-                          alarmTime: day.dateString,
-                        });
+                          })
+                          setCurrentDay (day.dateString)
+                          setAlarmTime (day.dateString)
                       }}
                       monthFormat="yyyy MMMM"
                       hideArrows
@@ -279,9 +257,9 @@ export default class TaskCreateSC extends Component {
                   <View style={styles.taskContainer}>
                     <TextInput
                       style={styles.title}
-                      onChangeText={text => this.setState({ taskText: text })}
+                      onChangeText={text => setTaskText(text)}
                       value={taskText}
-                      placeholder="What do you need to do?"
+                      placeholder="what is in your mind"
                     />
                     <Text
                       style={{
@@ -318,9 +296,7 @@ export default class TaskCreateSC extends Component {
                           fontSize: 19,
                           marginTop: 3,
                         }}
-                        onChangeText={text =>
-                          this.setState({ notesText: text })
-                        }
+                        onChangeText={text =>setNotesText( text )}
                         value={notesText}
                         placeholder="Enter notes about the task."
                       />
@@ -337,7 +313,7 @@ export default class TaskCreateSC extends Component {
                         Times
                       </Text>
                       <TouchableOpacity
-                        onPress={() => this._showDateTimePicker()}
+                        onPress={() => _showDateTimePicker()}
                         style={{
                           height: 25,
                           marginTop: 3,
@@ -379,42 +355,31 @@ export default class TaskCreateSC extends Component {
                       </View>
                       <Switch
                         value={isAlarmSet}
-                        onValueChange={this.handleAlarmSet}
+                        onValueChange={_handleAlarmSet}
                       />
                     </View>
                   </View>
-                  <TouchableOpacity
+                  <CButton 
                     disabled={taskText === ''}
-                    style={[
-                      styles.createTaskButton,
-                      {
-                        backgroundColor:
-                          taskText === ''
-                            ? 'rgba(46, 102, 231,0.5)'
-                            : '#2E66E7',
-                      },
-                    ]}
-                    onPress={async () => {
-                      console.log('OnPress:  --- ', todoStore )
-                      if (isAlarmSet) {
-                        
-                        await this.synchronizeCalendar(todoStore);
-                      }
-                      if (!isAlarmSet) {
-                        this._handleCreateEventData(todoStore);
-                      }
+                    style={{
+                      backgroundColor:
+                        taskText === ''
+                          ? 'rgba(46, 102, 231,0.5)'
+                          : '#2E66E7',
                     }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        textAlign: 'center',
-                        color: '#fff',
-                      }}
-                    >
-                      ADD YOUR TASK
-                    </Text>
-                  </TouchableOpacity>
+                    onPress={
+                      // async () => {
+                      //   if (isAlarmSet) {
+                      //     await _synchronizeCalendar(todoStore);
+                      //   }
+                      //   if (!isAlarmSet) {
+                      //     _handleCreateEventData(todoStore);
+                      //   }
+                      // }
+                      createTask
+                    }
+                    title='Confirm to create'
+                  />
                 </ScrollView>
               </View>
             </View>
@@ -422,19 +387,10 @@ export default class TaskCreateSC extends Component {
         )}
       </Context.Consumer>
     );
-  }
 }
 
 
 const styles = StyleSheet.create({
-  createTaskButton: {
-    width: 252,
-    height: 48,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
   seperator: {
     height: 0.5,
     width: '100%',
@@ -525,3 +481,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#eaeef7',
   },
 });
+
+export default TaskCreateSC 

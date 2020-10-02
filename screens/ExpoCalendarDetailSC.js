@@ -16,6 +16,11 @@ const CalendarDetailSC = ({navigation, route}) => {
         <Text style={styles.description}>{'color: '+selectedCalendar.color}</Text>
         <Text style={styles.description}>{'type: '+selectedCalendar.type}</Text>
         <Text style={styles.description}>{'allowModi: '+selectedCalendar.allowsModifications}</Text>
+        <Text style={styles.description}>{'id: '+selectedCalendar.id}</Text>
+        <Text style={styles.description}>{'source id: '+selectedCalendar.source.id}</Text>
+        <Text style={styles.description}>{'source name: '+selectedCalendar.source.name}</Text>
+        <Text style={styles.description}>{'source type: '+selectedCalendar.source.type}</Text>
+        <Text style={styles.description}>{'allowedAvailabilities: '+selectedCalendar.allowedAvailabilities}</Text>
       </ScrollView>
     </View>
   )
