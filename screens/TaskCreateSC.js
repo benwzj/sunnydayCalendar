@@ -94,20 +94,22 @@ const TaskCreateSC =(props) => {
   };
 
   const createTask = () =>{
-    console.log( 'createTask -- ', tasks)
+    //console.log( 'createTask -- ', tasks)
     const task = {
       calendarId: tasks.calendarId,
       title: taskText,
       notes: notesText,
-      startTime: moment(alarmTime).add(0, 'm').toDate(),
+      startDate: moment(alarmTime).add(0, 'm').toDate(),
+      endDate: moment(alarmTime).add(2, 'm').toDate(),
       alarmOn: true,
+      timeZone: Localization.timezone,
       color: `rgb(${Math.floor(
         Math.random() * Math.floor(256)
       )},${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
         Math.random() * Math.floor(256)
       )})`,
     }
-    console.log( 'createTask -- ', task)
+    //console.log( 'createTask -- ', task)
     dispatch ( addTask(task) )
     navigation.navigate ('TaskHomeSC');
   }

@@ -33,20 +33,32 @@ import {
 } from '../store/actions/tasks'
 
 const TaskHomeSC = (props) =>{
-  const tasks = useSelector (state => state.tasks)
-  const [todoList, setTodoList] = useState ([])
-  const [markedDate, setMarkedDate] = useState ([])
   const [currentDate, setCurrentDate] = useState (`${moment().format('YYYY')}-${moment().format(
-    'MM')}-${moment().format('DD')}`)
-  const [isModalVisible, setIsModalVisible] = useState (false)
+    'MM')}-${moment().format('DD')}`) 
+  const dateTaskList = useSelector (state => {
+    const dateTask = state.tasks.taskList.find ( task => task.date === currentDate)
+    if ( dateTask ) {
+      return dateTask.dateTaskList 
+    }else {
+      return []
+    }
+  })
+  const [todoList, setTodoList] = useState ([])
   const [selectedTask, setSelectedTask] = useState (null)
+   
+  const [markedDate, setMarkedDate] = useState ([])
+
+  const [isModalVisible, setIsModalVisible] = useState (false)
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false)
   const { navigation } = props
   const dispatch = useDispatch ()
 
   useEffect(()=> {
     //_handleDeletePreviousDayTask()
-    dispatch (setupTasks()) 
+    (async () =>{
+      await dispatch (setupTasks()) 
+    })()
+    //updateTaskListForDate (currentDate)
   },[])
 
   const _handleDeletePreviousDayTask = async () => {
@@ -89,6 +101,15 @@ const TaskHomeSC = (props) =>{
     setIsModalVisible (state=>!state);
   };
 
+  // const updateTaskListForDate = (date) =>{
+  //   const dateTask = tasks.taskList.find( task => task.date === date)
+  //   if ( dateTask ) {
+  //     setTodoList ( dateTask.dateTaskList )
+  //   }else {
+  //     setTodoList ([])
+  //   }
+  // }
+
   const _updateCurrentTask = async currentDate => {
     try {
       const value = await AsyncStorage.getItem('TODO');
@@ -121,23 +142,22 @@ const TaskHomeSC = (props) =>{
 
   const _handleDatePicked = date => {
     const prevSelectedTask = { ...selectedTask };
-    const selectedDatePicked = prevSelectedTask.alarm.time;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
-    const newModifiedDay = moment(selectedDatePicked)
+    const newModifiedDay = moment(prevSelectedTask.startDate)
       .hour(hour)
       .minute(minute);
-
-    prevSelectedTask.alarm.time = newModifiedDay;
+    
+    prevSelectedTask.startDate = newModifiedDay;
+    console.log ( '_handleDatePicked', prevSelectedTask )
     setSelectedTask ( prevSelectedTask )
     
-    _hideDateTimePicker();
+    setIsDateTimePickerVisible (false)
   };
 
   const _handleAlarmSet = () => {
-    
     const prevSelectedTask = { ...selectedTask };
-    prevSelectedTask.alarm.isOn = !prevSelectedTask.alarm.isOn;
+    prevSelectedTask.alarmOn = !prevSelectedTask.alarmOn;
     setSelectedTask ( prevSelectedTask )
   };
 
@@ -255,7 +275,7 @@ const TaskHomeSC = (props) =>{
               <DateTimePicker
                 isVisible={isDateTimePickerVisible}
                 onConfirm={_handleDatePicked}
-                onCancel={_hideDateTimePicker}
+                onCancel={() => setIsDateTimePickerVisible (false)}
                 mode="time"
               />
               <View style={styles.taskContainer}>
@@ -315,9 +335,7 @@ const TaskHomeSC = (props) =>{
                     onChangeText={text => {
                       const prevSelectedTask = { ...selectedTask };
                       prevSelectedTask.notes = text;
-                      
                       setSelectedTask ( prevSelectedTask )
-                      
                     }}
                     value={selectedTask.notes}
                     placeholder="Enter notes about the task."
@@ -335,14 +353,14 @@ const TaskHomeSC = (props) =>{
                     Times
                   </Text>
                   <TouchableOpacity
-                    onPress={() => _showDateTimePicker()}
+                    onPress={() => setIsDateTimePickerVisible (true)}
                     style={{
                       height: 25,
                       marginTop: 3,
                     }}
                   >
                     <Text style={{ fontSize: 19 }}>
-                      {moment(selectedTask.alarm.time).format('h:mm A')}
+                      {moment(selectedTask.startTime).format('h:mm A')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -371,12 +389,13 @@ const TaskHomeSC = (props) =>{
                       }}
                     >
                       <Text style={{ fontSize: 19 }}>
-                        {moment(selectedTask.alarm.time).format('h:mm A')}
+                        {/* {moment(selectedTask.alarm.time).format('h:mm A')} */}
+                        {moment(selectedTask.startTime).format('h:mm A')}
                       </Text>
                     </View>
                   </View>
                   <Switch
-                    value={selectedTask.alarm.isOn}
+                    value={selectedTask.alarmOn}
                     onValueChange={_handleAlarmSet}
                   />
                 </View>
@@ -389,31 +408,23 @@ const TaskHomeSC = (props) =>{
                 >
                   <CButton 
                     onPress = {async () => {
-                      console.log('todoStore: ', todoStore )
-                      _handleModalVisible();
-                      if (selectedTask.alarm.isOn) {
-                        await _updateAlarm();
-                      } else {
-                        await _deleteAlarm();
-                      }
-                      await todoStore.updateSelectedTask({
-                        date: currentDate,
-                        todo: selectedTask,
-                      });
-                      _updateCurrentTask(currentDate);
+                      //console.log('update button: ', selectedTask )
+                      setIsModalVisible (state=>!state)
+                      dispatch (updateTask (selectedTask))
                     }}
                     title = "UPDATE"
                     style = {{backgroundColor: '#2E66E7'}}
                   />
                   <CButton 
                     onPress = {async () => {
-                      _handleModalVisible();
-                      _deleteAlarm();
-                      await todoStore.deleteSelectedTask({
-                        date: currentDate,
-                        todo: selectedTask,
-                      });
-                      _updateCurrentTask(currentDate);
+                      setIsModalVisible (state=>!state);
+                      dispatch ( deleteTask (selectedTask))
+                      //_deleteAlarm();
+                      // await todoStore.deleteSelectedTask({
+                      //   date: currentDate,
+                      //   todo: selectedTask,
+                      // });
+                      // _updateCurrentTask(currentDate);
                     }}
                     title = "DELETE"
                     style = {{backgroundColor: '#ff6347'}}
@@ -477,7 +488,8 @@ const TaskHomeSC = (props) =>{
                 const selectedDate = `${moment(date).format('YYYY')}-${moment(
                   date
                 ).format('MM')}-${moment(date).format('DD')}`;
-                _updateCurrentTask(selectedDate);
+                //_updateCurrentTask(selectedDate);
+                //updateTaskListForDate (selectedDate)
                 setCurrentDate ( selectedDate )
               }}
             />
@@ -507,15 +519,16 @@ const TaskHomeSC = (props) =>{
                   paddingBottom: 20,
                 }}
               >
-                {todoList.map(item => (
+                {//todoList.map(item => (
+                  dateTaskList.map(item=>(
                   <TaskBrief 
                     onTaskPress = {() => { 
                         setSelectedTask (item)
                         setIsModalVisible (true)
-                        _getEvent(item);
+                        //_getEvent(item);
                     }}
                     item = {item}
-                    key = {item.key}
+                    key = {item.ID}
                   />
                 ))}
               </ScrollView>

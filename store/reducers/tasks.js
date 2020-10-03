@@ -38,25 +38,29 @@ export const tasksReducer = (state = initialState, action) =>{
             ...selectedDateTask.dateTaskList, 
             task
           ]
-          return {
+          const returnObj = {
             ...state, 
             taskList: [
-              ...state.taskList.filter (dateTask => dateTask.date === date),
+              ...state.taskList.filter (dateTask => dateTask.date != date),
               {...selectedDateTask}
             ]
           }
+          console.log ( 'reducers addTask---1:',returnObj )
+          return returnObj
         }else {
           const newDateTask = {
             date: date,
             dateTaskList: [task]
           }
-          return {
+          const returnObj = {
             ...state, 
             taskList: [
               ...state.taskList,
               newDateTask
             ]
           }
+          console.log ( 'reducers addTask---2:',returnObj )
+          return returnObj
         }
       }
     case UPDATE_TASK:
@@ -67,54 +71,54 @@ export const tasksReducer = (state = initialState, action) =>{
           dateTask => dateTask.date === date
         )
         if ( selectedDateTask ){
-          selectedDateTask.dateTaskList = selectedDateTask.dateTaskList.filter (
-            item => item.ID != task.ID
+          const selectedTask = selectedDateTask.dateTaskList.find(
+            item=>item.ID === task.ID
           )
-
+          Object.assign ( selectedTask, task )
+          // cause re-render for useSelector in TaskHomeSC
           selectedDateTask.dateTaskList = [
             ...selectedDateTask.dateTaskList, 
-            task
           ]
-          return {
-            ...state, 
+          const returnObj = {
+            ...state,
             taskList: [
-              ...state.taskList.filter (dateTask => dateTask.date === date),
-              {...selectedDateTask}
+              ...state.taskList
             ]
           }
+          console.log( 'updateTask reducer: ', returnObj)
+          return returnObj
         }else {
-          // const newDateTask = {
-          //   date: date,
-          //   dateTaskList: [task]
-          // }
-          // return {
-          //   ...state, 
-          //   taskList: [
-          //     ...state.taskList,
-          //     newDateTask
-          //   ]
-          // }
           return state
         }
       }
       case DELETE_TASK:
-        const {date, id} = action.payload
+        const task = action.payload
+        const date = new Date(task.startDate).toISOString().split('T')[0]
         const selectedDateTask = state.taskList.find (
-          dateTask => dateTask.date === date
+          item => item.date === date
         )
         if (selectedDateTask){
           selectedDateTask.dateTaskList = selectedDateTask.dateTaskList.filter (
-            task => task.ID != id
+            item => item.ID != task.ID
           )
         }
-  
-        return {
-          ...state, 
-          array: [
-            ...state.array.filter (dateTask => dateTask.date === date),
-            {...selectedDateTask}
-          ]
+        if ( selectedDateTask && selectedDateTask.dateTaskList.length > 0){
+          return {
+            ...state, 
+            taskList: [
+              ...state.taskList.filter (dateTask => dateTask.date != date),
+              selectedDateTask
+            ]
+          }
+        }else {
+          return {
+            ...state, 
+            taskList: [
+              ...state.taskList.filter (dateTask => dateTask.date != date)
+            ]
+          }
         }
+
     default: 
       return state
   }

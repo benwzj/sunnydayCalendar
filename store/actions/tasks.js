@@ -1,10 +1,11 @@
 import * as ExpoCalendar from 'expo-calendar'
 import AsyncStorage from '@react-native-community/async-storage'
+import * as Localization from 'expo-localization'
 
 export const SETUP_TASKS = 'SETUP_TASKS'
 export const ADD_TASK = 'ADD_TASK'
 export const DELETE_TASK = 'DELETE_TASK'
-export const UPDATE_TASKS = 'UPDATE_TASKS'
+export const UPDATE_TASK = 'UPDATE_TASKS'
 export const SUNNYDAY_TASKS = 'SUNNYDAY_TASKS'
 
 async function createCalendar() {
@@ -71,16 +72,16 @@ export const addTask = (task) => {
           title: task.title,
           startDate: task.startDate,
           endDate: task.endDate,
-          alarms: {relativeOffset: 2},
+          //alarms: {relativeOffset: 2},
           notes: task.notes,
-          timeZone: Localization.timezone
+          timeZone: task.timeZone
         }
       )
-      const date = new Date(task.startDate).toISOString().split('T')[0]
 
+      const date = new Date(task.startDate).toISOString().split('T')[0]
       const tasksString = await AsyncStorage.getItem(SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      console.log( 'addTask,tasks from Storage: ', tasks)
+      console.log( 'addTask,old tasks from Storage: ', tasks)
       const selectedDateTasks = tasks.taskList.find (
         item => item.date === date
       )
@@ -93,11 +94,12 @@ export const addTask = (task) => {
         }
         tasks.taskList.push (newDateTask)
       }
-      console.log( 'addTask, new tasks: ', tasks)
+      console.log( 'addTask, new tasks to storage: ', tasks)
       await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) );
 
-      dispatch ({ type: ADD_TASKS, payload: task })
+      dispatch ({ type: ADD_TASK, payload: task })
     }catch (err) {
+      console.log('addTask err:',err)
       throw err
     }
   }
@@ -106,61 +108,82 @@ export const addTask = (task) => {
 export const updateTask = (task) => {
   return async ( dispatch ) => {
     try {
+      console.log( 'updateTask --- ', task)
       await ExpoCalendar.updateEventAsync (
         task.ID,
         {
           title: task.title,
           startDate: task.startDate,
           endDate: task.endDate,
-          alarms: {relativeOffset: 2},
+          //alarms: {relativeOffset: 2},
           notes: task.notes,
-          timeZone: Localization.timezone
+          timeZone: task.timeZone
         }
       )
-
+      
       const date = new Date(task.startDate).toISOString().split('T')[0]
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
+      console.log( 'updateTask --- old from storage ', tasks)
       const selectedDateTask = tasks.taskList.find (
         item => item.date === date
       )
       if ( selectedDateTask ){
-        const updatedDateTaskList = selectedDateTask.dateTaskList.filter (
-          item => item.ID != task.ID
+        const selectedTask = selectedDateTask.dateTaskList.find (
+          item => item.ID === task.ID
         )
-        selectedDateTask.dateTaskList = updatedDateTaskList
+        Object.assign ( selectedTask, task )
+        console.log( 'updateTask --- new to storage ', tasks)
         await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(
           tasks
         ));
       }else {
         // can't find the task
       }
-      dispatch ({ type: UPDATE_TASKS, payload: task })
+      dispatch ({ type: UPDATE_TASK, payload: task })
     }catch (err) {
       throw err
     }
   }
 }
-export const deleteTask = ( date, id ) => {
+
+export const deleteTask = ( task ) => {
   return async (dispatch) => {
     try {
-      await ExpoCalendar.deleteEventAsync (id);
+      const date = new Date(task.startDate).toISOString().split('T')[0]
+      await ExpoCalendar.deleteEventAsync (task.ID);
 
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      const updatedTaskList = tasks.taskList.map (item => {
-        if (date === item.date) {
-          const undatedList = item.dateTaskList.filter(task => task.ID != id)
-          item.dateTaskList = undatedList;
-        }
-        return item;
-      });
-      await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
-        ...tasks,
-        TaskList: updatedTaskList
-      }))
+      const selectedDateTask = tasks.taskList.find (item => item.date===date)
+      const updatedDateTaskList = selectedDateTask.dateTaskList.filter (
+        item => item.ID != task.ID 
+      )
+      if ( updatedDateTaskList.length > 0 ){
+        selectedDateTask.dateTaskList = updatedDateTaskList
+        await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) )
+      }else {
+        await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
+          ...tasks,
+          taskList: [
+            ...taskList.filter (item => item.date != date)
+          ]
+        }))
+      }
 
-      dispatch ({ type: DELETE_TASKS, payload: {date, id} })
+      // const updatedTaskList = tasks.taskList.map (item => {
+      //   if (date === item.date) {
+      //     const undatedList = item.dateTaskList.filter(task => task.ID != id)
+      //     item.dateTaskList = undatedList;
+      //   }
+      //   return item;
+      // });
+      // await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
+      //   ...tasks,
+      //   TaskList: updatedTaskList
+      // }))
+
+      dispatch ({ type: DELETE_TASK, payload: task })
     } catch (err) {
       throw err;
     }
