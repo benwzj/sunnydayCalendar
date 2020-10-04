@@ -9,13 +9,8 @@ import {
   TextInput,
   Switch,
   StyleSheet,
-  Alert,
-  Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
-import * as ExpoCalendar from 'expo-calendar';
-import * as Localization from 'expo-localization';
 import Constants from 'expo-constants';
 import CalendarStrip from 'react-native-calendar-strip';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -56,7 +51,7 @@ const TaskHomeSC = (props) =>{
     })()
   },[])
 
-  const _handleDatePicked = date => {
+  const handleDatePicked = date => {
     setSelectedTask ( selectedTask => {
       const updatedSelectedTask = {...selectedTask}
       updatedSelectedTask.startDate = date
@@ -81,7 +76,7 @@ const TaskHomeSC = (props) =>{
             <CModal isModalVisible={isModalVisible}>
               <DateTimePicker
                 isVisible={isDateTimePickerVisible}
-                onConfirm={_handleDatePicked}
+                onConfirm={handleDatePicked}
                 onCancel={() => setIsDateTimePickerVisible (false)}
                 mode="time"
               />
