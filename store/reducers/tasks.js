@@ -20,7 +20,6 @@ export const tasksReducer = (state = initialState, action) =>{
     case SETUP_TASKS:
       {
         const tasks = action.payload
-        console.log('tasksReducer : ', tasks )
         if ( tasks ){
           return tasks
         }
@@ -45,7 +44,6 @@ export const tasksReducer = (state = initialState, action) =>{
               {...selectedDateTask}
             ]
           }
-          console.log ( 'reducers addTask---1:',returnObj )
           return returnObj
         }else {
           const newDateTask = {
@@ -59,7 +57,6 @@ export const tasksReducer = (state = initialState, action) =>{
               newDateTask
             ]
           }
-          console.log ( 'reducers addTask---2:',returnObj )
           return returnObj
         }
       }
@@ -85,7 +82,6 @@ export const tasksReducer = (state = initialState, action) =>{
               ...state.taskList
             ]
           }
-          console.log( 'updateTask reducer: ', returnObj)
           return returnObj
         }else {
           return state

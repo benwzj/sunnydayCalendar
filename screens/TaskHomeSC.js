@@ -27,7 +27,6 @@ import TaskBrief from '../components/TaskBrief'
 import CButton from '../components/CButton'
 import {
   setupTasks, 
-  addTask,
   updateTask, 
   deleteTask
 } from '../store/actions/tasks'
@@ -43,9 +42,7 @@ const TaskHomeSC = (props) =>{
       return []
     }
   })
-  const [todoList, setTodoList] = useState ([])
   const [selectedTask, setSelectedTask] = useState (null)
-   
   const [markedDate, setMarkedDate] = useState ([])
 
   const [isModalVisible, setIsModalVisible] = useState (false)
@@ -54,104 +51,19 @@ const TaskHomeSC = (props) =>{
   const dispatch = useDispatch ()
 
   useEffect(()=> {
-    //_handleDeletePreviousDayTask()
     (async () =>{
       await dispatch (setupTasks()) 
     })()
-    //updateTaskListForDate (currentDate)
   },[])
 
-  const _handleDeletePreviousDayTask = async () => {
-    try {
-      const value = await AsyncStorage.getItem('TODO');
-
-      if (value !== null) {
-        const todoList = JSON.parse(value);
-        const todayDate = `${moment().format('YYYY')}-${moment().format(
-          'MM'
-        )}-${moment().format('DD')}`;
-        const checkDate = moment(todayDate);
-        await todoList.filter(item => {
-          const currDate = moment(item.date);
-          const checkedDate = checkDate.diff(currDate, 'days');
-          if (checkedDate > 0) {
-            item.todoList.forEach(async listValue => {
-              try {
-                await ExpoCalendar.deleteEventAsync(
-                  listValue.alarm.createdEventID.toString()
-                );
-              } catch (error) {
-                console.log(error);
-              }
-            });
-            return false;
-          }
-          return true;
-        });
-
-        // await AsyncStorage.setItem('TODO', JSON.stringify(updatedList));
-        _updateCurrentTask(currentDate);
-      }
-    } catch (error) {
-      // Error retrieving data
-    }
-  };
-
-  const _handleModalVisible = () => {
-    setIsModalVisible (state=>!state);
-  };
-
-  // const updateTaskListForDate = (date) =>{
-  //   const dateTask = tasks.taskList.find( task => task.date === date)
-  //   if ( dateTask ) {
-  //     setTodoList ( dateTask.dateTaskList )
-  //   }else {
-  //     setTodoList ([])
-  //   }
-  // }
-
-  const _updateCurrentTask = async currentDate => {
-    try {
-      const value = await AsyncStorage.getItem('TODO');
-      if (value !== null) {
-        const todoList = JSON.parse(value);
-        const markDot = todoList.map(item => item.markedDot);
-        const todoLists = todoList.filter(item => {
-          if (currentDate === item.date) {
-            return true;
-          }
-          return false;
-        });
-        if (todoLists.length !== 0) {
-            setMarkedDate ( markDot )
-            setTodoList ( todoLists[0].todoList )
-
-        } else {
-          setMarkedDate ( markDot )
-          setTodoList ( [] )
-        }
-      }
-    } catch (error) {
-      // Error retrieving data
-    }
-  };
-
-  const _showDateTimePicker = () => setIsDateTimePickerVisible (true)
-
-  const _hideDateTimePicker = () => setIsDateTimePickerVisible (false)
-
   const _handleDatePicked = date => {
-    const prevSelectedTask = { ...selectedTask };
-    const hour = moment(date).hour();
-    const minute = moment(date).minute();
-    const newModifiedDay = moment(prevSelectedTask.startDate)
-      .hour(hour)
-      .minute(minute);
-    
-    prevSelectedTask.startDate = newModifiedDay;
-    console.log ( '_handleDatePicked', prevSelectedTask )
-    setSelectedTask ( prevSelectedTask )
-    
+    setSelectedTask ( selectedTask => {
+      const updatedSelectedTask = {...selectedTask}
+      updatedSelectedTask.startDate = date
+      updatedSelectedTask.endDate = date
+      console.log( '_handleDatePicked---',updatedSelectedTask)
+      return updatedSelectedTask
+    })
     setIsDateTimePickerVisible (false)
   };
 
@@ -159,111 +71,6 @@ const TaskHomeSC = (props) =>{
     const prevSelectedTask = { ...selectedTask };
     prevSelectedTask.alarmOn = !prevSelectedTask.alarmOn;
     setSelectedTask ( prevSelectedTask )
-  };
-
-  const _updateAlarm = async () => {
-    const event = {
-      title: selectedTask.title,
-      notes: selectedTask.notes,
-      startDate: moment(selectedTask.alarm.time)
-        .add(0, 'm')
-        .toDate(),
-      endDate: moment(selectedTask.alarm.time)
-        .add(5, 'm')
-        .toDate(),
-      timeZone: Localization.timezone,
-    };
-
-    if (selectedTask.alarm.createdEventID === '') {
-      try {
-        const calendarId = await _createNewCalendar();
-        const createEventAsyncRes = await ExpoCalendar.createEventAsync(
-          calendarId.toString(),
-          event
-        );
-        const updateTask = { ...selectedTask };
-        updateTask.alarm.createdEventID = createEventAsyncRes;
-        setSelectedTask ( updateTask )
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      try {
-        await ExpoCalendar.updateEventAsync(
-          selectedTask.alarm.createdEventID.toString(),
-          event
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-
-  const _deleteAlarm = async () => {
-    console.log(selectedTask.alarm);
-
-    try {
-      await ExpoCalendar.deleteEventAsync(selectedTask.alarm.createdEventID);
-
-      const updateTask = { ...selectedTask };
-      updateTask.alarm.createdEventID = '';
-      setSelectedTask ( updateTask )
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const _getEvent = async () => {
-    if (selectedTask.alarm.createdEventID) {
-      try {
-        await ExpoCalendar.getEventAsync(
-          selectedTask.alarm.createdEventID.toString()
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-
-  const _createNewCalendar = async () => {
-    const calendars = await ExpoCalendar.getCalendarsAsync();
-    const newCalendar = {
-      title: 'test',
-      entityType: ExpoCalendar.EntityTypes.EVENT,
-      color: '#2196F3',
-      sourceId:
-        Platform.OS === 'ios'
-          ? calendars.find(cal => cal.source && cal.source.name === 'Default')
-              .source.id
-          : undefined,
-      source:
-        Platform.OS === 'android'
-          ? {
-              name: calendars.find(
-                cal => cal.accessLevel === ExpoCalendar.CalendarAccessLevel.OWNER
-              ).source.name,
-              isLocalAccount: true,
-            }
-          : undefined,
-      name: 'test',
-      accessLevel: ExpoCalendar.CalendarAccessLevel.OWNER,
-      ownerAccount:
-        Platform.OS === 'android'
-          ? calendars.find(
-              cal => cal.accessLevel === ExpoCalendar.CalendarAccessLevel.OWNER
-            ).ownerAccount
-          : undefined,
-    };
-
-    let calendarId = null;
-
-    try {
-      calendarId = await ExpoCalendar.createCalendarAsync(newCalendar);
-    } catch (e) {
-      Alert.alert(e.message);
-    }
-
-    return calendarId;
   };
 
   return (
@@ -360,7 +167,7 @@ const TaskHomeSC = (props) =>{
                     }}
                   >
                     <Text style={{ fontSize: 19 }}>
-                      {moment(selectedTask.startTime).format('h:mm A')}
+                      {moment(selectedTask.startDate).format('h:mm A')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -389,8 +196,7 @@ const TaskHomeSC = (props) =>{
                       }}
                     >
                       <Text style={{ fontSize: 19 }}>
-                        {/* {moment(selectedTask.alarm.time).format('h:mm A')} */}
-                        {moment(selectedTask.startTime).format('h:mm A')}
+                        {moment(selectedTask.startDate).format('h:mm A')}
                       </Text>
                     </View>
                   </View>
@@ -408,7 +214,6 @@ const TaskHomeSC = (props) =>{
                 >
                   <CButton 
                     onPress = {async () => {
-                      //console.log('update button: ', selectedTask )
                       setIsModalVisible (state=>!state)
                       dispatch (updateTask (selectedTask))
                     }}
@@ -419,12 +224,6 @@ const TaskHomeSC = (props) =>{
                     onPress = {async () => {
                       setIsModalVisible (state=>!state);
                       dispatch ( deleteTask (selectedTask))
-                      //_deleteAlarm();
-                      // await todoStore.deleteSelectedTask({
-                      //   date: currentDate,
-                      //   todo: selectedTask,
-                      // });
-                      // _updateCurrentTask(currentDate);
                     }}
                     title = "DELETE"
                     style = {{backgroundColor: '#ff6347'}}
@@ -496,9 +295,7 @@ const TaskHomeSC = (props) =>{
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('TaskCreateSC', {
-                  updateCurrentTask: _updateCurrentTask,
-                  currentDate,
-                  createNewCalendar: _createNewCalendar,
+                  currentDate
                 })
               }
               style={styles.CreateTask}

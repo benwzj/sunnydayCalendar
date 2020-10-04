@@ -1,6 +1,5 @@
 import * as ExpoCalendar from 'expo-calendar'
 import AsyncStorage from '@react-native-community/async-storage'
-import * as Localization from 'expo-localization'
 
 export const SETUP_TASKS = 'SETUP_TASKS'
 export const ADD_TASK = 'ADD_TASK'
@@ -97,7 +96,7 @@ export const addTask = (task) => {
       console.log( 'addTask, new tasks to storage: ', tasks)
       await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) );
 
-      dispatch ({ type: ADD_TASK, payload: task })
+      dispatch ({ type: ADD_TASK, payload: {...task, ID:taskId} })
     }catch (err) {
       console.log('addTask err:',err)
       throw err
@@ -108,7 +107,6 @@ export const addTask = (task) => {
 export const updateTask = (task) => {
   return async ( dispatch ) => {
     try {
-      console.log( 'updateTask --- ', task)
       await ExpoCalendar.updateEventAsync (
         task.ID,
         {
@@ -124,7 +122,6 @@ export const updateTask = (task) => {
       const date = new Date(task.startDate).toISOString().split('T')[0]
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      console.log( 'updateTask --- old from storage ', tasks)
       const selectedDateTask = tasks.taskList.find (
         item => item.date === date
       )
@@ -133,15 +130,16 @@ export const updateTask = (task) => {
           item => item.ID === task.ID
         )
         Object.assign ( selectedTask, task )
-        console.log( 'updateTask --- new to storage ', tasks)
         await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(
           tasks
         ));
       }else {
         // can't find the task
+        console.log( 'cant find dateTask object according to date, this is a structure problem, need to redesign the data structure.' )
       }
       dispatch ({ type: UPDATE_TASK, payload: task })
     }catch (err) {
+      console.log('updateTask err:',err)
       throw err
     }
   }
@@ -156,35 +154,28 @@ export const deleteTask = ( task ) => {
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
       const selectedDateTask = tasks.taskList.find (item => item.date===date)
-      const updatedDateTaskList = selectedDateTask.dateTaskList.filter (
-        item => item.ID != task.ID 
-      )
-      if ( updatedDateTaskList.length > 0 ){
-        selectedDateTask.dateTaskList = updatedDateTaskList
-        await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) )
-      }else {
-        await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
-          ...tasks,
-          taskList: [
-            ...taskList.filter (item => item.date != date)
-          ]
-        }))
+      if ( selectedDateTask ){
+        const updatedDateTaskList = selectedDateTask.dateTaskList.filter (
+          item => item.ID != task.ID 
+        )
+        if ( updatedDateTaskList && updatedDateTaskList.length > 0 ){
+          selectedDateTask.dateTaskList = updatedDateTaskList
+          await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) )
+        }else {
+          await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
+            ...tasks,
+            taskList: [
+              ...tasks.taskList.filter (item => item.date != date)
+            ]
+          }))
+        }
+      }else{
+        console.log( 'cant find dateTask object according to date, this is a structure problem, need to redesign the data structure.' )
       }
-
-      // const updatedTaskList = tasks.taskList.map (item => {
-      //   if (date === item.date) {
-      //     const undatedList = item.dateTaskList.filter(task => task.ID != id)
-      //     item.dateTaskList = undatedList;
-      //   }
-      //   return item;
-      // });
-      // await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
-      //   ...tasks,
-      //   TaskList: updatedTaskList
-      // }))
 
       dispatch ({ type: DELETE_TASK, payload: task })
     } catch (err) {
+      console.log('deleteTask err:',err)
       throw err;
     }
   }
