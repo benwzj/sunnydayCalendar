@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Text,
   View,
@@ -28,8 +28,8 @@ const TaskCreateSC =(props) => {
   const [taskStartDate, setTaskStartDate] = useState (
     new Date(route.params.currentDate).toISOString()
   )
-  const [keyboardHeight, setKeyboardHeight] = useState (0)
-  const [visibleHeight, setVisibleHeight] = useState (Dimensions.get('window').height)
+  // const [keyboardHeight, setKeyboardHeight] = useState (0)
+  // const [visibleHeight, setVisibleHeight] = useState (Dimensions.get('window').height)
   const [isAlarmSet, setIsAlermSet] = useState (false)
   const [taskText, setTaskText] = useState ('')
   const [notesText, setNotesText] = useState ('')

@@ -62,7 +62,7 @@ const TaskHomeSC = (props) =>{
     setIsDateTimePickerVisible (false)
   };
 
-  const _handleAlarmSet = () => {
+  const handleAlarmSet = () => {
     const prevSelectedTask = { ...selectedTask };
     prevSelectedTask.alarmOn = !prevSelectedTask.alarmOn;
     setSelectedTask ( prevSelectedTask )
@@ -197,7 +197,7 @@ const TaskHomeSC = (props) =>{
                   </View>
                   <Switch
                     value={selectedTask.alarmOn}
-                    onValueChange={_handleAlarmSet}
+                    onValueChange={handleAlarmSet}
                   />
                 </View>
                 <View
@@ -234,9 +234,6 @@ const TaskHomeSC = (props) =>{
             }}
           >
             <CalendarStrip
-              // ref={ref => {
-              //   calenderRef = ref;
-              // }}
               calendarAnimation={{ type: 'sequence', duration: 30 }}
               daySelectionAnimation={{
                 type: 'background',

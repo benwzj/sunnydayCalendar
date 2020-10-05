@@ -19,7 +19,7 @@ const ExpoCalendarNavigator = () => {
       <Stack.Screen 
         name = 'ExpoCalendarListSC'
         component = {ExpoCalendarListSC}
-        title = 'Calendars List'
+        options = {{title: 'Calendars List'}}
       />
       <Stack.Screen 
         name = 'ExpoCalendarDetailSC'
@@ -38,25 +38,24 @@ const RNCalendarNavigator = () => {
       <Stack.Screen 
         name = 'RNCAgendaSC'
         component = {RNCAgendaSC}
-        title = 'Agenda'
+        options = {{ title: 'Agenda' }}
       />
     </Stack.Navigator>
   )
 }
 
 const TasksNavigator = () =>{
-
   return (
     <Stack.Navigator>
       <Stack.Screen 
         name = 'TaskHomeSC'
         component = {TaskHomeSC}
-        title = 'Task Home'
+        options = {{ title: 'Task Home' }}
       />
       <Stack.Screen 
         name = 'TaskCreateSC'
         component = {TaskCreateSC}
-        title = 'Create Task'
+        options = {{title: 'Create Task' }}
       />
     </Stack.Navigator>
   )
@@ -73,9 +72,9 @@ const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator>
+        <Tab.Screen name="TasksNavigator" component={TasksNavigator} />
         <Tab.Screen name="ExpoCalendar" component={ExpoCalendarNavigator} />
         <Tab.Screen name="RNCalendar" component={RNCalendarNavigator} />
-        <Tab.Screen name="TasksNavigator" component={TasksNavigator} />
       </Tab.Navigator>
     </NavigationContainer>
   )
