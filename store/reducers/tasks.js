@@ -28,60 +28,33 @@ export const tasksReducer = (state = initialState, action) =>{
     case ADD_TASK:
       {
         const task = action.payload
-        const date = new Date(task.startDate).toISOString().split('T')[0]
-        const selectedDateTask = state.taskList.find (
-          dateTask => dateTask.date === date
-        )
-        if ( selectedDateTask ){
-          selectedDateTask.dateTaskList = [
-            ...selectedDateTask.dateTaskList, 
+        const returnObj = {
+          ...state, 
+          taskList: [
+            ...state.taskList,
             task
           ]
-          const returnObj = {
-            ...state, 
-            taskList: [
-              ...state.taskList.filter (dateTask => dateTask.date != date),
-              {...selectedDateTask}
-            ]
-          }
-          return returnObj
-        }else {
-          const newDateTask = {
-            date: date,
-            dateTaskList: [task]
-          }
-          const returnObj = {
-            ...state, 
-            taskList: [
-              ...state.taskList,
-              newDateTask
-            ]
-          }
-          return returnObj
         }
+        console.log( 'ADD_TASK reducer', returnObj)
+        return returnObj
       }
     case UPDATE_TASK:
       {
         const task = action.payload
-        const date = new Date(task.startDate).toISOString().split('T')[0]
-        const selectedDateTask = state.taskList.find (
-          dateTask => dateTask.date === date
-        )
-        if ( selectedDateTask ){
-          const selectedTask = selectedDateTask.dateTaskList.find(
+        const selectedTask = state.taskList.find(
             item=>item.ID === task.ID
           )
+        if ( selectedTask ){
           Object.assign ( selectedTask, task )
-          // cause re-render for useSelector in TaskHomeSC
-          selectedDateTask.dateTaskList = [
-            ...selectedDateTask.dateTaskList, 
-          ]
+          // cause re-render for useSelector in TaskHomeS
+          //...
           const returnObj = {
             ...state,
             taskList: [
               ...state.taskList
             ]
           }
+          console.log( 'UPDATE_TASK reducer:', returnObj)
           return returnObj
         }else {
           return state
@@ -89,31 +62,17 @@ export const tasksReducer = (state = initialState, action) =>{
       }
       case DELETE_TASK:
         const task = action.payload
-        const date = new Date(task.startDate).toISOString().split('T')[0]
-        const selectedDateTask = state.taskList.find (
-          item => item.date === date
+        const updatedTaskList = state.taskList.filter (
+          item => item.ID != task.ID
         )
-        if (selectedDateTask){
-          selectedDateTask.dateTaskList = selectedDateTask.dateTaskList.filter (
-            item => item.ID != task.ID
-          )
+        const returnObj = {
+          ...state, 
+          taskList: [
+            ...updatedTaskList
+          ]
         }
-        if ( selectedDateTask && selectedDateTask.dateTaskList.length > 0){
-          return {
-            ...state, 
-            taskList: [
-              ...state.taskList.filter (dateTask => dateTask.date != date),
-              selectedDateTask
-            ]
-          }
-        }else {
-          return {
-            ...state, 
-            taskList: [
-              ...state.taskList.filter (dateTask => dateTask.date != date)
-            ]
-          }
-        }
+        console.log ('DELETE_TASK reducer:', returnObj )
+        return returnObj
 
     default: 
       return state

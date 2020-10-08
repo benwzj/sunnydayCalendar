@@ -27,16 +27,21 @@ import {
 } from '../store/actions/tasks'
 
 const TaskHomeSC = (props) =>{
-  const [currentDate, setCurrentDate] = useState (`${moment().format('YYYY')}-${moment().format(
-    'MM')}-${moment().format('DD')}`) 
+  //const [currentDate, setCurrentDate] = useState (new Date().toISOString()) 
+  const [selectedDate, setSelectedDate] = useState (new Date().toISOString()) 
   const dateTaskList = useSelector (state => {
-    const dateTask = state.tasks.taskList.find ( task => task.date === currentDate)
-    if ( dateTask ) {
-      return dateTask.dateTaskList 
-    }else {
-      return []
-    }
+    console.log ('tasks: ',state.tasks)
+    return state.tasks.taskList.filter ( item => {
+      
+      console.log('selectedDate: ',selectedDate)
+      console.log('item.startDateTime: ',item.startDateTime)
+      const date1 = new Date(item.startDateTime).getDate()
+      const date2 = new Date(selectedDate).getDate()
+      console.log(date1,date2)
+      return date1 === date2
+    })
   })
+  const calendarId = useSelector (state => state.tasks.calendarId)
   const [selectedTask, setSelectedTask] = useState (null)
   const [markedDate, setMarkedDate] = useState ([])
 
@@ -51,12 +56,12 @@ const TaskHomeSC = (props) =>{
     })()
   },[])
 
-  const handleDatePicked = date => {
+  const handleTimePicked = date => {
     setSelectedTask ( selectedTask => {
       const updatedSelectedTask = {...selectedTask}
-      updatedSelectedTask.startDate = date
-      updatedSelectedTask.endDate = date
-      console.log( '_handleDatePicked---',updatedSelectedTask)
+      updatedSelectedTask.startDateTime = date
+      updatedSelectedTask.endDateTime = date
+      console.log( 'handleTimePicked---',updatedSelectedTask)
       return updatedSelectedTask
     })
     setIsDateTimePickerVisible (false)
@@ -76,9 +81,10 @@ const TaskHomeSC = (props) =>{
             <CModal isModalVisible={isModalVisible}>
               <DateTimePicker
                 isVisible={isDateTimePickerVisible}
-                onConfirm={handleDatePicked}
+                onConfirm={handleTimePicked}
                 onCancel={() => setIsDateTimePickerVisible (false)}
                 mode="time"
+                date ={new Date(selectedTask.startDateTime)}
               />
               <View style={styles.taskContainer}>
                 <TextInput
@@ -162,7 +168,7 @@ const TaskHomeSC = (props) =>{
                     }}
                   >
                     <Text style={{ fontSize: 19 }}>
-                      {moment(selectedTask.startDate).format('h:mm A')}
+                      {moment(selectedTask.startDateTime).format('h:mm A')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -191,7 +197,7 @@ const TaskHomeSC = (props) =>{
                       }}
                     >
                       <Text style={{ fontSize: 19 }}>
-                        {moment(selectedTask.startDate).format('h:mm A')}
+                        {moment(selectedTask.startDateTime).format('h:mm A')}
                       </Text>
                     </View>
                   </View>
@@ -276,20 +282,24 @@ const TaskHomeSC = (props) =>{
               iconContainer={{ flex: 0.1 }}
               markedDates={markedDate}
               onDateSelected={date => {
-                const selectedDate = `${moment(date).format('YYYY')}-${moment(
-                  date
-                ).format('MM')}-${moment(date).format('DD')}`;
+                console.log ('stripe date: ', date)
+                // const theDate = `${moment(date).format('YYYY')}-${moment(
+                //   date
+                // ).format('MM')}-${moment(date).format('DD')}`;
                 //_updateCurrentTask(selectedDate);
                 //updateTaskListForDate (selectedDate)
-                setCurrentDate ( selectedDate )
+                setSelectedDate ( date.toISOString() )
               }}
             />
             <TouchableOpacity
-              onPress={() =>
+              onPress={() =>{
+                if (calendarId === ''){
+                  dispatch (setupTasks())
+                }
                 navigation.navigate('TaskCreateSC', {
-                  currentDate
+                  selectedDate
                 })
-              }
+              }}
               style={styles.CreateTask}
             >
               <Image
@@ -312,9 +322,9 @@ const TaskHomeSC = (props) =>{
                   dateTaskList.map(item=>(
                   <TaskBrief 
                     onTaskPress = {() => { 
-                        setSelectedTask (item)
-                        setIsModalVisible (true)
-                        //_getEvent(item);
+                      setSelectedTask (item)
+                      setIsModalVisible (true)
+                      //_getEvent(item);
                     }}
                     item = {item}
                     key = {item.ID}

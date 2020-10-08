@@ -29,7 +29,7 @@ const TaskBrief = (props) => {
                 )}/${moment(item.alarm.time).format('DD')}`
               } */}
               { 
-              new Date(item.startDate).toISOString().split('T')[0] 
+              new Date(item.startDateTime).toISOString().split('T')[0] 
               }
             </Text>
             <Text style={styles.note}>

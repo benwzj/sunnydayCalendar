@@ -16,7 +16,7 @@ import * as Localization from 'expo-localization';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useDispatch, useSelector} from 'react-redux'
 import CButton from '../components/CButton'
-import { addTask}  from '../store/actions/tasks'
+import { addTask, setupTasks}  from '../store/actions/tasks'
 
 const { width: vw } = Dimensions.get('window');
 // moment().format('YYYY/MM/DD')
@@ -24,9 +24,10 @@ const { width: vw } = Dimensions.get('window');
 const TaskCreateSC =(props) => {
   const dispatch = useDispatch ()
   const { navigation, route } = props
-  const tasks = useSelector (state => state.tasks)
-  const [taskStartDate, setTaskStartDate] = useState (
-    new Date(route.params.currentDate).toISOString()
+  const calendarId = useSelector (state => state.tasks.calendarId)
+  //const [taskStartDate, setTaskStartDate] = useState (
+  const [taskStartDateTime, setTaskStartDateTime] = useState (
+    new Date(route.params.selectedDate).toISOString()
   )
   // const [keyboardHeight, setKeyboardHeight] = useState (0)
   // const [visibleHeight, setVisibleHeight] = useState (Dimensions.get('window').height)
@@ -35,9 +36,9 @@ const TaskCreateSC =(props) => {
   const [notesText, setNotesText] = useState ('')
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
   const [selectedDay, setSelectedDay] = useState({
-    [`${moment(route.params.currentDate).format(
-      'YYYY')}-${moment(route.params.currentDate).format(
-      'MM')}-${moment(route.params.currentDate).format(
+    [`${moment(route.params.selectedDate).format(
+      'YYYY')}-${moment(route.params.selectedDate).format(
+      'MM')}-${moment(route.params.selectedDate).format(
       'DD' )}`]: {
       selected: true,
       selectedColor: '#2E66E7',
@@ -66,12 +67,16 @@ const TaskCreateSC =(props) => {
   // };
 
   const createTask = () =>{
+    if (calendarId === ''){
+      dispatch ( setupTasks())
+      return
+    }
     const task = {
-      calendarId: tasks.calendarId,
+      calendarId: calendarId,
       title: taskText,
       notes: notesText,
-      startDate: taskStartDate,//alarmTime,//moment(alarmTime).add(0, 'm').toDate(),
-      endDate: taskStartDate,//moment(alarmTime).add(2, 'm').toDate(),
+      startDateTime: taskStartDateTime,//alarmTime,//moment(alarmTime).add(0, 'm').toDate(),
+      endDateTime: taskStartDateTime,//moment(alarmTime).add(2, 'm').toDate(),
       alarmOn: isAlarmSet,
       timeZone: Localization.timezone,
       color: `rgb(${Math.floor(
@@ -80,17 +85,18 @@ const TaskCreateSC =(props) => {
         Math.random() * Math.floor(256)
       )})`,
     }
+    console.log( 'createTask () ', task)
     dispatch ( addTask(task) )
     navigation.navigate ('TaskHomeSC');
   }
 
-  const handleDatePicked = date => {
+  const handleTimePicked = date => {
     const updatedTime = new Date (date)
     const hour = updatedTime.getUTCHours()
     const minute = updatedTime.getUTCMinutes()
-    setTaskStartDate (startDate=>{
-      console.log('_handleDatePicked...startDate: ', startDate)
-      const updatedStartDate = new Date (startDate)
+    setTaskStartDateTime (startDateTime=>{
+      console.log('_handleDatePicked...startDate: ', startDateTime)
+      const updatedStartDate = new Date (startDateTime)
       updatedStartDate.setUTCHours (hour)
       updatedStartDate.setUTCMinutes (minute)
       return updatedStartDate.toISOString()
@@ -102,9 +108,10 @@ const TaskCreateSC =(props) => {
     <>
       <DateTimePicker
         isVisible={isDateTimePickerVisible}
-        onConfirm={handleDatePicked}
+        onConfirm={handleTimePicked}
         onCancel={()=>setIsDateTimePickerVisible(false)}
         mode="time"
+        date={new Date()}
       />
       <View style={styles.container}>
         <View
@@ -123,7 +130,7 @@ const TaskCreateSC =(props) => {
                   width: 350,
                   height: 350,
                 }}
-                current={taskStartDate}
+                current={taskStartDateTime}
                 minDate={moment().format()}
                 horizontal
                 pastScrollRange={0}
@@ -136,7 +143,7 @@ const TaskCreateSC =(props) => {
                         selectedColor: '#2E66E7',
                       },
                     })
-                    setTaskStartDate (day.dateString)
+                    setTaskStartDateTime (day.dateString)
                 }}
                 monthFormat="yyyy MMMM"
                 hideArrows
@@ -218,7 +225,7 @@ const TaskCreateSC =(props) => {
                   }}
                 >
                   <Text style={{ fontSize: 19 }}>
-                    {moment(taskStartDate).format('h:mm A')}
+                    {moment(taskStartDateTime).format('h:mm A')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -247,7 +254,7 @@ const TaskCreateSC =(props) => {
                     }}
                   >
                     <Text style={{ fontSize: 19 }}>
-                      {moment(taskStartDate).format('h:mm A')}
+                      {moment(taskStartDateTime).format('h:mm A')}
                     </Text>
                   </View>
                 </View>

@@ -37,7 +37,7 @@ export const setupTasks = () => {
   return async (dispatch) => {
     try {
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
-      if (tasksString !== null) {
+      if (tasksString) {
         dispatch ({ type: SETUP_TASKS, payload: JSON.parse(tasksString) })
       }else {
         const calPermResponse = await ExpoCalendar.getCalendarPermissionsAsync()
@@ -69,31 +69,17 @@ export const addTask = (task) => {
         task.calendarId,
         {
           title: task.title,
-          startDate: task.startDate,
-          endDate: task.endDate,
-          //alarms: {relativeOffset: 2},
+          startDate: task.startDateTime,
+          endDate: task.endDateTime,
+          alarms: [{relativeOffset: 2}],
           notes: task.notes,
           timeZone: task.timeZone
         }
       )
-
-      const date = new Date(task.startDate).toISOString().split('T')[0]
       const tasksString = await AsyncStorage.getItem(SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
       console.log( 'addTask,old tasks from Storage: ', tasks)
-      const selectedDateTasks = tasks.taskList.find (
-        item => item.date === date
-      )
-      if ( selectedDateTasks ){
-        selectedDateTasks.dateTaskList.push ({...task, ID:taskId})
-      }else {
-        const newDateTask = {
-          date: date,
-          dateTaskList: [{...task, ID:taskId}]
-        }
-        tasks.taskList.push (newDateTask)
-      }
-      console.log( 'addTask, new tasks to storage: ', tasks)
+      tasks.taskList.push ({...task, ID:taskId})
       await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) );
 
       dispatch ({ type: ADD_TASK, payload: {...task, ID:taskId} })
@@ -111,24 +97,20 @@ export const updateTask = (task) => {
         task.ID,
         {
           title: task.title,
-          startDate: task.startDate,
-          endDate: task.endDate,
+          startDate: task.startDateTime,
+          endDate: task.endDateTime,
           //alarms: {relativeOffset: 2},
           notes: task.notes,
           timeZone: task.timeZone
         }
       )
       
-      const date = new Date(task.startDate).toISOString().split('T')[0]
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      const selectedDateTask = tasks.taskList.find (
-        item => item.date === date
+      const selectedTask = tasks.taskList.find (
+        item => item.ID === task.ID
       )
-      if ( selectedDateTask ){
-        const selectedTask = selectedDateTask.dateTaskList.find (
-          item => item.ID === task.ID
-        )
+      if ( selectedTask ){
         Object.assign ( selectedTask, task )
         await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(
           tasks
@@ -148,30 +130,14 @@ export const updateTask = (task) => {
 export const deleteTask = ( task ) => {
   return async (dispatch) => {
     try {
-      const date = new Date(task.startDate).toISOString().split('T')[0]
+      
       await ExpoCalendar.deleteEventAsync (task.ID);
 
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      const selectedDateTask = tasks.taskList.find (item => item.date===date)
-      if ( selectedDateTask ){
-        const updatedDateTaskList = selectedDateTask.dateTaskList.filter (
-          item => item.ID != task.ID 
-        )
-        if ( updatedDateTaskList && updatedDateTaskList.length > 0 ){
-          selectedDateTask.dateTaskList = updatedDateTaskList
-          await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) )
-        }else {
-          await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify({
-            ...tasks,
-            taskList: [
-              ...tasks.taskList.filter (item => item.date != date)
-            ]
-          }))
-        }
-      }else{
-        console.log( 'cant find dateTask object according to date, this is a structure problem, need to redesign the data structure.' )
-      }
+      const updatedTaskList = tasks.taskList.filter(item=>item.ID != task.ID)
+      tasks.taskList = updatedTaskList
+      await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) )
 
       dispatch ({ type: DELETE_TASK, payload: task })
     } catch (err) {
