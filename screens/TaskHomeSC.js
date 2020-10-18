@@ -30,11 +30,11 @@ const TaskHomeSC = (props) =>{
   //const [currentDate, setCurrentDate] = useState (new Date().toISOString()) 
   const [selectedDate, setSelectedDate] = useState (new Date().toISOString()) 
   const dateTaskList = useSelector (state => {
-    console.log ('tasks: ',state.tasks)
+    //console.log ('tasks: ',state.tasks)
     return state.tasks.taskList.filter ( item => {
       
-      console.log('selectedDate: ',selectedDate)
-      console.log('item.startDateTime: ',item.startDateTime)
+      //console.log('selectedDate: ',selectedDate)
+      //console.log('item.startDateTime: ',item.startDateTime)
       const date1 = new Date(item.startDateTime).getDate()
       const date2 = new Date(selectedDate).getDate()
       console.log(date1,date2)
@@ -61,7 +61,7 @@ const TaskHomeSC = (props) =>{
       const updatedSelectedTask = {...selectedTask}
       updatedSelectedTask.startDateTime = date
       updatedSelectedTask.endDateTime = date
-      console.log( 'handleTimePicked---',updatedSelectedTask)
+      //console.log( 'handleTimePicked---',updatedSelectedTask)
       return updatedSelectedTask
     })
     setIsDateTimePickerVisible (false)

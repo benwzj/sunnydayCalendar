@@ -27,7 +27,7 @@ const TaskCreateSC =(props) => {
   const calendarId = useSelector (state => state.tasks.calendarId)
   //const [taskStartDate, setTaskStartDate] = useState (
   const [taskStartDateTime, setTaskStartDateTime] = useState (
-    new Date(route.params.selectedDate).toISOString()
+    route.params.selectedDate
   )
   // const [keyboardHeight, setKeyboardHeight] = useState (0)
   // const [visibleHeight, setVisibleHeight] = useState (Dimensions.get('window').height)
@@ -91,16 +91,10 @@ const TaskCreateSC =(props) => {
   }
 
   const handleTimePicked = date => {
-    const updatedTime = new Date (date)
-    const hour = updatedTime.getUTCHours()
-    const minute = updatedTime.getUTCMinutes()
-    setTaskStartDateTime (startDateTime=>{
-      console.log('_handleDatePicked...startDate: ', startDateTime)
-      const updatedStartDate = new Date (startDateTime)
-      updatedStartDate.setUTCHours (hour)
-      updatedStartDate.setUTCMinutes (minute)
-      return updatedStartDate.toISOString()
-    })
+    console.log('_handleDatePicked...Date: ', date.toString())
+    setTaskStartDateTime (
+      date.toISOString()
+    )
     setIsDateTimePickerVisible(false)
   };
 
@@ -110,8 +104,8 @@ const TaskCreateSC =(props) => {
         isVisible={isDateTimePickerVisible}
         onConfirm={handleTimePicked}
         onCancel={()=>setIsDateTimePickerVisible(false)}
-        mode="time"
-        date={new Date()}
+        mode="datetime"
+        date={new Date(taskStartDateTime)}
       />
       <View style={styles.container}>
         <View

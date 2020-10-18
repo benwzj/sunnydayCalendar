@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux'
 import ExpoCalendarListSC from './screens/ExpoCalendarListSC'
 import ExpoCalendarDetailSC from './screens/ExpoCalendarDetailSC'
 import RNCAgendaSC from './screens/RNCAgendaSC'
+import RNCExpandableSC from './screens/RNCExpandableSC'
 import TaskHomeSC from './screens/TaskHomeSC'
 import TaskCreateSC from './screens/TaskCreateSC'
 import {askCalendarPermission} from './store/actions/calendars'
@@ -38,7 +39,20 @@ const RNCalendarNavigator = () => {
       <Stack.Screen 
         name = 'RNCAgendaSC'
         component = {RNCAgendaSC}
-        options = {{ title: 'Agenda' }}
+        options = {({navigation})=>({
+          title: 'Agenda',
+          headerRight: () => (
+            <Button
+              onPress = {() => navigation.navigate('RNCExpandableSC')}
+              title= "Expandable"
+            />
+          )
+        })}
+      />
+      <Stack.Screen 
+        name = 'RNCExpandableSC'
+        component = {RNCExpandableSC}
+        options = {{ title: 'Expandable' }}
       />
     </Stack.Navigator>
   )
