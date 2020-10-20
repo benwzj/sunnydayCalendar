@@ -6,8 +6,10 @@ import {
   ScrollView,
   Text,
   Dimensions,
+  Button,
   TextInput,
   Switch,
+  Alert,
   StyleSheet,
 } from 'react-native';
 import moment from 'moment';
@@ -15,6 +17,8 @@ import Constants from 'expo-constants';
 import CalendarStrip from 'react-native-calendar-strip';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useSelector, useDispatch} from 'react-redux'
+import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
+import _ from 'lodash';
 
 import { Context } from '../data/Context';
 import CModal from '../components/CModal'
@@ -30,21 +34,38 @@ const TaskHomeSC = (props) =>{
   //const [currentDate, setCurrentDate] = useState (new Date().toISOString()) 
   const [selectedDate, setSelectedDate] = useState (new Date().toISOString()) 
   const dateTaskList = useSelector (state => {
-    //console.log ('tasks: ',state.tasks)
-    return state.tasks.taskList.filter ( item => {
-      
-      //console.log('selectedDate: ',selectedDate)
-      //console.log('item.startDateTime: ',item.startDateTime)
-      const date1 = new Date(item.startDateTime).getDate()
-      const date2 = new Date(selectedDate).getDate()
-      console.log(date1,date2)
-      return date1 === date2
-    })
+    const sections = []
+    for ( const item of state.tasks.taskList ){
+      const title = moment (item.startDateTime).format("YYYY-MM-D")
+      if ( sections.lenght === 0 ){
+        sections.push ({title: title, data: [item]})
+      }else {
+        let foundSameDate = false
+        for ( const section of sections){
+          if (section.title === title){
+            section.data.push (item)
+            foundSameDate = true
+            break
+          }
+        }
+        if ( !foundSameDate ){
+          sections.push ({title: title, data: [item]})
+        }
+      }
+    }
+    console.log( 'sections: ---', sections )
+    return sections.sort ((function(a, b) {
+      if (a.title < b.title) {
+        return -1;
+      }
+      if (a.title > b.title) {
+        return 1;
+      }
+      return 0
+    }))
   })
   const calendarId = useSelector (state => state.tasks.calendarId)
   const [selectedTask, setSelectedTask] = useState (null)
-  const [markedDate, setMarkedDate] = useState ([])
-
   const [isModalVisible, setIsModalVisible] = useState (false)
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false)
   const { navigation } = props
@@ -73,6 +94,47 @@ const TaskHomeSC = (props) =>{
     setSelectedTask ( prevSelectedTask )
   };
 
+  const getMarkedDates = () => {
+    const marked = {};
+    dateTaskList.forEach(item => {
+      // NOTE: only mark dates with data
+      if (item.data && item.data.length > 0 && !_.isEmpty(item.data[0])) {
+        marked[item.title] = {marked: true};
+      } else {
+        marked[item.title] = {disabled: true};
+      }
+    });
+    return marked;
+  }
+  const renderEmptyItem = () =>{
+    return (
+      <View style={styles.emptyItem}>
+        <Text style={styles.emptyItemText}>No Events Planned</Text>
+      </View>
+    );
+  }
+
+  const renderItem = ({item}) => {
+    if (_.isEmpty(item)) {
+      return renderEmptyItem();
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('TaskDetailSC',{taskId: item.ID})}
+        style={styles.item}
+      >
+        <View>
+          <Text style={styles.itemHourText}>{moment (item.startDateTime).format("hA")}</Text>
+          <Text style={styles.itemDurationText}>{moment (item.endDateTime).format("hA")}</Text>
+        </View>
+        <Text style={styles.itemTitleText}>{item.title}</Text>
+        <View style={styles.itemButtonContainer}>
+          <Button color={'grey'} title={'Info'} onPress={() => Alert.alert(item.notes)}/>
+        </View>
+      </TouchableOpacity>
+    );
+  }
   return (
     <Context.Consumer>
       {todoStore => (
@@ -236,10 +298,28 @@ const TaskHomeSC = (props) =>{
           <View
             style={{
               flex: 1,
-              paddingTop: Constants.statusBarHeight,
+              //paddingTop: Constants.statusBarHeight,
             }}
           >
-            <CalendarStrip
+            <CalendarProvider
+              date={new Date().toISOString().split('T')[0]}
+              disabledOpacity={0.6}
+            >
+              <ExpandableCalendar
+                disableAllTouchEventsForDisabledDays
+                firstDay={1}
+                markedDates={getMarkedDates()} 
+                leftArrowImageSource={require('../assets/previous.png')}
+                rightArrowImageSource={require('../assets/next.png')}
+              />
+              <AgendaList
+                sections={dateTaskList}
+                //extraData={this.state}
+                renderItem={renderItem}
+                // sectionStyle={styles.section}
+              />
+            </CalendarProvider>
+            {/* <CalendarStrip
               calendarAnimation={{ type: 'sequence', duration: 30 }}
               daySelectionAnimation={{
                 type: 'background',
@@ -290,7 +370,7 @@ const TaskHomeSC = (props) =>{
                 //updateTaskListForDate (selectedDate)
                 setSelectedDate ( date.toISOString() )
               }}
-            />
+            /> */}
             <TouchableOpacity
               onPress={() =>{
                 if (calendarId === ''){
@@ -307,7 +387,7 @@ const TaskHomeSC = (props) =>{
                 style={{height: 30, width: 30}}
               />
             </TouchableOpacity>
-            <View
+            {/* <View
               style={{
                 width: '100%',
                 height: Dimensions.get('window').height - 170,
@@ -331,14 +411,13 @@ const TaskHomeSC = (props) =>{
                   />
                 ))}
               </ScrollView>
-            </View>
+            </View> */}
           </View>
         </>
       )}
     </Context.Consumer>
   );
 }
-
 
 const styles = StyleSheet.create({
   CreateTask: {
@@ -421,6 +500,43 @@ const styles = StyleSheet.create({
     elevation: 5,
     padding: 22,
   },
+  item: {
+    padding: 20,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgrey',
+    flexDirection: 'row'
+  },
+  itemHourText: {
+    color: 'black'
+  },
+  itemDurationText: {
+    color: 'grey',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4
+  },
+  itemTitleText: {
+    color: 'black',
+    marginLeft: 16,
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  itemButtonContainer: {
+    flex: 1,
+    alignItems: 'flex-end'
+  },
+  emptyItem: {
+    paddingLeft: 20,
+    height: 52,
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgrey'
+  },
+  emptyItemText: {
+    color: 'lightgrey',
+    fontSize: 14
+  }
 });
 
 export default TaskHomeSC

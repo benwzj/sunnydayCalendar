@@ -167,7 +167,7 @@ export default class ExpandableCalendarScreen extends Component {
           // calendarStyle={styles.calendar}
           // headerStyle={styles.calendar} // for horizontal only
           // disableWeekScroll
-           theme={this.getTheme()}
+          // theme={this.getTheme()}
           disableAllTouchEventsForDisabledDays
           firstDay={1}
           markedDates={this.getMarkedDates()} // {'2019-06-01': {marked: true}, '2019-06-02': {marked: true}, '2019-06-03': {marked: true}};

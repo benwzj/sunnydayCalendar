@@ -3,102 +3,43 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
   TextInput,
-  Keyboard,
   Switch,
   StyleSheet
 } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
-import * as Localization from 'expo-localization';
-import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useDispatch, useSelector} from 'react-redux'
 import CButton from '../components/CButton'
-import { addTask, setupTasks}  from '../store/actions/tasks'
+import { deleteTask }  from '../store/actions/tasks'
 
-const { width: vw } = Dimensions.get('window');
-// moment().format('YYYY/MM/DD')
-
-const TaskCreateSC =(props) => {
+const TaskDetailSC =(props) => {
   const dispatch = useDispatch ()
   const { navigation, route } = props
-  const calendarId = useSelector (state => state.tasks.calendarId)
-  const [taskStartDateTime, setTaskStartDateTime] = useState (
-    moment (route.params.selectedDate).hours(8).minutes(0).seconds(0).format()
-  )
-  const [isAlarmSet, setIsAlermSet] = useState (false)
-  const [taskText, setTaskText] = useState ('')
-  const [notesText, setNotesText] = useState ('')
-  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
-  const [selectedDay, setSelectedDay] = useState({
-    [`${moment(route.params.selectedDate).format(
-      'YYYY')}-${moment(route.params.selectedDate).format(
-      'MM')}-${moment(route.params.selectedDate).format(
-      'DD' )}`]: {
-      selected: true,
-      selectedColor: '#2E66E7',
-    },
-  })
-
-  const createTask = () =>{
-    if (calendarId === ''){
-      dispatch ( setupTasks())
-      return
-    }
-    const task = {
-      calendarId: calendarId,
-      title: taskText,
-      notes: notesText,
-      startDateTime: taskStartDateTime,
-      endDateTime: taskStartDateTime,
-      alarmOn: isAlarmSet,
-      timeZone: Localization.timezone,
-      color: `rgb(${Math.floor(
-        Math.random() * Math.floor(256)
-      )},${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-        Math.random() * Math.floor(256)
-      )})`,
-    }
-    console.log( 'createTask () ', task)
-    dispatch ( addTask(task) )
-    navigation.navigate ('TaskHomeSC');
+  const task = useSelector (state => state.tasks.taskList.find (
+    task => task.ID === route.params.taskId 
+  ))
+  //console.log ('TaskDetailSC task: ---', task)
+  if ( !task ){
+    return <View><Text>Found nothing about this task </Text></View>
   }
-
-  const handleTimePicked = date => {
-    console.log('_handleDatePicked...Date: ', date.toString())
-    setTaskStartDateTime (
-      date.toISOString()
-    )
-    setIsDateTimePickerVisible(false)
-  };
-
+  const removeTask = () =>{
+    navigation.navigate ('TaskHomeSC')
+    dispatch (deleteTask (task))
+  }
   return (
     <>
-      <DateTimePicker
-        isVisible={isDateTimePickerVisible}
-        onConfirm={handleTimePicked}
-        onCancel={()=>setIsDateTimePickerVisible(false)}
-        mode="datetime"
-        date={new Date(taskStartDateTime)}
-      />
       <View style={styles.container}>
-        <View
-          style={{
-            //height: visibleHeight,
-          }}
-        >
           <ScrollView
             contentContainerStyle={{
-              //paddingBottom: 50,
+              paddingBottom: 50,
             }}
           >
             <View style={styles.taskContainer}>
               <TextInput
                 style={styles.title}
                 onChangeText={text => setTaskText(text)}
-                value={taskText}
+                value={task.title}
                 placeholder="what is in your mind"
               />
               <Text
@@ -136,8 +77,8 @@ const TaskCreateSC =(props) => {
                     fontSize: 19,
                     marginTop: 3,
                   }}
-                  onChangeText={text =>setNotesText( text )}
-                  value={notesText}
+                  //onChangeText={text =>setNotesText( text )}
+                  value={task.notes}
                   placeholder="Enter notes about the task."
                 />
               </View>
@@ -153,14 +94,14 @@ const TaskCreateSC =(props) => {
                   Times
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setIsDateTimePickerVisible(true)}
+                  //onPress={() => setIsDateTimePickerVisible(true)}
                   style={{
                     height: 25,
                     marginTop: 3,
                   }}
                 >
                   <Text style={{ fontSize: 19 }}>
-                    {moment(taskStartDateTime).format('h:mm A')}
+                    {moment(task.startDateTime).format('h:mm A')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -189,34 +130,26 @@ const TaskCreateSC =(props) => {
                     }}
                   >
                     <Text style={{ fontSize: 19 }}>
-                      {moment(taskStartDateTime).format('h:mm A')}
+                      
+                      {moment(task.startDateTime).format('h:mm A')}
                     </Text>
                   </View>
                 </View>
                 <Switch
-                  value={isAlarmSet}
-                  onValueChange={()=>setIsAlermSet(previousState => !previousState)}
+                  value={task.alarmOn}
+                  //onValueChange={()=>setIsAlermSet(previousState => !previousState)}
                 />
               </View>
             </View>
             <CButton 
-              disabled={taskText === ''}
-              style={{
-                backgroundColor:
-                  taskText === ''
-                    ? 'rgba(46, 102, 231,0.5)'
-                    : '#2E66E7',
-              }}
-              onPress={ createTask }
-              title='Confirm to create'
+              onPress={ removeTask }
+              title='Delete This Task'
             />
           </ScrollView>
-        </View>
       </View>
     </>
   );
 }
-
 
 const styles = StyleSheet.create({
   seperator: {
@@ -310,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TaskCreateSC 
+export default TaskDetailSC 

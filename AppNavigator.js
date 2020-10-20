@@ -11,6 +11,7 @@ import RNCAgendaSC from './screens/RNCAgendaSC'
 import RNCExpandableSC from './screens/RNCExpandableSC'
 import TaskHomeSC from './screens/TaskHomeSC'
 import TaskCreateSC from './screens/TaskCreateSC'
+import TaskDetailSC from './screens/TaskDetailSC'
 import {askCalendarPermission} from './store/actions/calendars'
 
 const Stack = createStackNavigator();
@@ -70,6 +71,11 @@ const TasksNavigator = () =>{
         name = 'TaskCreateSC'
         component = {TaskCreateSC}
         options = {{title: 'Create Task' }}
+      />
+      <Stack.Screen 
+        name = 'TaskDetailSC'
+        component = {TaskDetailSC}
+        options = {{title: 'Task Detail' }}
       />
     </Stack.Navigator>
   )

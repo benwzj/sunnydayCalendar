@@ -47,3 +47,19 @@ tasks{
     },
   ],
 }
+
+section structure:
+{
+  title: '2020-10-18', 
+  data: [
+    {
+      hour: '12am', 
+      duration: '1h', 
+      title: 'First Yoga', 
+      ID: "9EEB0498-67A3-40A1-9486-D1F939AA5BA1", 
+      color: "rgb(243,216,133)",
+      alarm: 0,
+      note: 'test from RN'
+    },
+  ]
+},

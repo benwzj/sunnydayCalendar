@@ -64,7 +64,7 @@ export const setupTasks = () => {
 export const addTask = (task) => {
   return async ( dispatch ) => {
     try {
-      console.log( 'addTask,task to be add:  ', task)
+      //console.log( 'addTask,task to be add:  ', task)
       const taskId = await ExpoCalendar.createEventAsync(
         task.calendarId,
         {
@@ -78,7 +78,7 @@ export const addTask = (task) => {
       )
       const tasksString = await AsyncStorage.getItem(SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
-      console.log( 'addTask,old tasks from Storage: ', tasks)
+      //console.log( 'addTask,old tasks from Storage: ', tasks)
       tasks.taskList.push ({...task, ID:taskId})
       await AsyncStorage.setItem ( SUNNYDAY_TASKS, JSON.stringify(tasks) );
 
