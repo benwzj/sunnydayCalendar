@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useDispatch } from 'react-redux'
 
+import {askCalendarPermission} from './store/actions/calendars'
 import ExpoCalendarListSC from './screens/ExpoCalendarListSC'
 import ExpoCalendarDetailSC from './screens/ExpoCalendarDetailSC'
 import RNCAgendaSC from './screens/RNCAgendaSC'
@@ -12,7 +13,7 @@ import RNCExpandableSC from './screens/RNCExpandableSC'
 import TaskHomeSC from './screens/TaskHomeSC'
 import TaskCreateSC from './screens/TaskCreateSC'
 import TaskDetailSC from './screens/TaskDetailSC'
-import {askCalendarPermission} from './store/actions/calendars'
+import TaskAlertSC from './screens/TaskAlertSC'
 
 const Stack = createStackNavigator();
 const ExpoCalendarNavigator = () => {
@@ -71,11 +72,18 @@ const TasksNavigator = () =>{
         name = 'TaskCreateSC'
         component = {TaskCreateSC}
         options = {{title: 'Create Task' }}
+        initialParams = {{ alertTime: {time: -15, text:'15 minutes before'} }}
       />
       <Stack.Screen 
         name = 'TaskDetailSC'
         component = {TaskDetailSC}
         options = {{title: 'Task Detail' }}
+      />
+      <Stack.Screen 
+        name = 'TaskAlertSC'
+        component = {TaskAlertSC}
+        options = {{title: 'Task Alert' }}
+        initialParams = {{ alertTime: {time: -15, text:'15 minutes before'} }}
       />
     </Stack.Navigator>
   )

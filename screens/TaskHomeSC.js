@@ -32,11 +32,13 @@ import {
 
 const TaskHomeSC = (props) =>{
   //const [currentDate, setCurrentDate] = useState (new Date().toISOString()) 
-  const [selectedDate, setSelectedDate] = useState (new Date().toISOString()) 
+  const [selectedDate, setSelectedDate] = useState (
+    moment().format("YYYY-MM-DD")
+  ) 
   const dateTaskList = useSelector (state => {
     const sections = []
     for ( const item of state.tasks.taskList ){
-      const title = moment (item.startDateTime).format("YYYY-MM-D")
+      const title = moment (item.startDateTime).format("YYYY-MM-DD")
       if ( sections.lenght === 0 ){
         sections.push ({title: title, data: [item]})
       }else {
@@ -53,7 +55,7 @@ const TaskHomeSC = (props) =>{
         }
       }
     }
-    console.log( 'sections: ---', sections )
+    //console.log( 'sections: ---', sections )
     return sections.sort ((function(a, b) {
       if (a.title < b.title) {
         return -1;
@@ -130,293 +132,228 @@ const TaskHomeSC = (props) =>{
         </View>
         <Text style={styles.itemTitleText}>{item.title}</Text>
         <View style={styles.itemButtonContainer}>
-          <Button color={'grey'} title={'Info'} onPress={() => Alert.alert(item.notes)}/>
+          <Button color={'grey'} title={'Info >'} onPress={() => Alert.alert(item.notes)}/>
         </View>
       </TouchableOpacity>
     );
   }
+  const onDateChanged = (date, updateSource) => {
+    //console.log('onDateChanged: ', date, updateSource);
+    setSelectedDate (date)
+  }
+
+  const onMonthChange = (month, updateSource ) => {
+    console.log('onMonthChange: ', month, updateSource);
+  }
+
+  const inputAddTask = (
+    <TouchableOpacity
+      onPress={() =>{
+        if (calendarId === ''){
+          dispatch (setupTasks())
+        }
+        navigation.navigate('TaskCreateSC', {
+          selectedDate
+        })
+      }}
+      style={styles.CreateTask}
+    >
+      <Image
+        source={require('../assets/plus.png')}
+        style={{height: 30, width: 30}}
+      />
+    </TouchableOpacity>
+  )
+
+  const inputCalendar = (
+    <CalendarProvider
+      date={new Date().toISOString().split('T')[0]}
+      disabledOpacity={0.6}
+      onDateChanged={onDateChanged}
+      onMonthChange={onMonthChange}
+    >
+      <ExpandableCalendar
+        //disableAllTouchEventsForDisabledDays
+        firstDay={1}
+        markedDates={getMarkedDates()} 
+        leftArrowImageSource={require('../assets/previous.png')}
+        rightArrowImageSource={require('../assets/next.png')}
+      />
+      <AgendaList
+        sections={dateTaskList}
+        //extraData={this.state}
+        renderItem={renderItem}
+        // sectionStyle={styles.section}
+      />
+    </CalendarProvider>
+  )
   return (
-    <Context.Consumer>
-      {todoStore => (
         <>
-          {selectedTask !== null && (
-            <CModal isModalVisible={isModalVisible}>
-              <DateTimePicker
-                isVisible={isDateTimePickerVisible}
-                onConfirm={handleTimePicked}
-                onCancel={() => setIsDateTimePickerVisible (false)}
-                mode="time"
-                date ={new Date(selectedTask.startDateTime)}
-              />
-              <View style={styles.taskContainer}>
-                <TextInput
-                  style={styles.title}
-                  onChangeText={text => {
-                    const prevSelectedTask = { ...selectedTask };
-                    prevSelectedTask.title = text;
-                    setSelectedTask ( prevSelectedTask )
-                  }}
-                  value={selectedTask.title}
-                  placeholder="What is in your mind!?"
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: '#BDC6D8',
-                    marginVertical: 10,
-                  }}
-                >
-                  Suggestion
-                </Text>
-                <View style={{ flexDirection: 'row' }}>
-                  <View style={styles.readBook}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                      Read book
-                    </Text>
-                  </View>
-                  <View style={styles.design}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                      Design
-                    </Text>
-                  </View>
-                  <View style={styles.learn}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                      Learn
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.notesContent} />
-                <View>
-                  <Text
-                    style={{
-                      color: '#9CAAC4',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Notes
-                  </Text>
-                  <TextInput
-                    style={{
-                      height: 25,
-                      fontSize: 19,
-                      marginTop: 3,
-                    }}
-                    onChangeText={text => {
-                      const prevSelectedTask = { ...selectedTask };
-                      prevSelectedTask.notes = text;
-                      setSelectedTask ( prevSelectedTask )
-                    }}
-                    value={selectedTask.notes}
-                    placeholder="Enter notes about the task."
-                  />
-                </View>
-                <View style={styles.sepeerator} />
-                <View>
-                  <Text
-                    style={{
-                      color: '#9CAAC4',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Times
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setIsDateTimePickerVisible (true)}
-                    style={{
-                      height: 25,
-                      marginTop: 3,
-                    }}
-                  >
-                    <Text style={{ fontSize: 19 }}>
-                      {moment(selectedTask.startDateTime).format('h:mm A')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.sepeerator} />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <View>
-                    <Text
-                      style={{
-                        color: '#9CAAC4',
-                        fontSize: 16,
-                        fontWeight: '600',
-                      }}
-                    >
-                      Alarm
-                    </Text>
-                    <View
-                      style={{
-                        height: 25,
-                        marginTop: 3,
-                      }}
-                    >
-                      <Text style={{ fontSize: 19 }}>
-                        {moment(selectedTask.startDateTime).format('h:mm A')}
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={selectedTask.alarmOn}
-                    onValueChange={handleAlarmSet}
-                  />
-                </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <CButton 
-                    onPress = {async () => {
-                      setIsModalVisible (state=>!state)
-                      dispatch (updateTask (selectedTask))
-                    }}
-                    title = "UPDATE"
-                    style = {{backgroundColor: '#2E66E7'}}
-                  />
-                  <CButton 
-                    onPress = {async () => {
-                      setIsModalVisible (state=>!state);
-                      dispatch ( deleteTask (selectedTask))
-                    }}
-                    title = "DELETE"
-                    style = {{backgroundColor: '#ff6347'}}
-                  />
-                </View>
-              </View>
-            </CModal>
-          )}
+          {//selectedTask !== null && (
+            // <CModal isModalVisible={isModalVisible}>
+            //   <DateTimePicker
+            //     isVisible={isDateTimePickerVisible}
+            //     onConfirm={handleTimePicked}
+            //     onCancel={() => setIsDateTimePickerVisible (false)}
+            //     mode="time"
+            //     date ={new Date(selectedTask.startDateTime)}
+            //   />
+            //   <View style={styles.taskContainer}>
+            //     <TextInput
+            //       style={styles.title}
+            //       onChangeText={text => {
+            //         const prevSelectedTask = { ...selectedTask };
+            //         prevSelectedTask.title = text;
+            //         setSelectedTask ( prevSelectedTask )
+            //       }}
+            //       value={selectedTask.title}
+            //       placeholder="What is in your mind!?"
+            //     />
+            //     <Text
+            //       style={{
+            //         fontSize: 14,
+            //         color: '#BDC6D8',
+            //         marginVertical: 10,
+            //       }}
+            //     >
+            //       Suggestion
+            //     </Text>
+            //     <View style={{ flexDirection: 'row' }}>
+            //       <View style={styles.readBook}>
+            //         <Text style={{ textAlign: 'center', fontSize: 14 }}>
+            //           Read book
+            //         </Text>
+            //       </View>
+            //       <View style={styles.design}>
+            //         <Text style={{ textAlign: 'center', fontSize: 14 }}>
+            //           Design
+            //         </Text>
+            //       </View>
+            //       <View style={styles.learn}>
+            //         <Text style={{ textAlign: 'center', fontSize: 14 }}>
+            //           Learn
+            //         </Text>
+            //       </View>
+            //     </View>
+            //     <View style={styles.notesContent} />
+            //     <View>
+            //       <Text
+            //         style={{
+            //           color: '#9CAAC4',
+            //           fontSize: 16,
+            //           fontWeight: '600',
+            //         }}
+            //       >
+            //         Notes
+            //       </Text>
+            //       <TextInput
+            //         style={{
+            //           height: 25,
+            //           fontSize: 19,
+            //           marginTop: 3,
+            //         }}
+            //         onChangeText={text => {
+            //           const prevSelectedTask = { ...selectedTask };
+            //           prevSelectedTask.notes = text;
+            //           setSelectedTask ( prevSelectedTask )
+            //         }}
+            //         value={selectedTask.notes}
+            //         placeholder="Enter notes about the task."
+            //       />
+            //     </View>
+            //     <View style={styles.sepeerator} />
+            //     <View>
+            //       <Text
+            //         style={{
+            //           color: '#9CAAC4',
+            //           fontSize: 16,
+            //           fontWeight: '600',
+            //         }}
+            //       >
+            //         Times
+            //       </Text>
+            //       <TouchableOpacity
+            //         onPress={() => setIsDateTimePickerVisible (true)}
+            //         style={{
+            //           height: 25,
+            //           marginTop: 3,
+            //         }}
+            //       >
+            //         <Text style={{ fontSize: 19 }}>
+            //           {moment(selectedTask.startDateTime).format('h:mm A')}
+            //         </Text>
+            //       </TouchableOpacity>
+            //     </View>
+            //     <View style={styles.sepeerator} />
+            //     <View
+            //       style={{
+            //         flexDirection: 'row',
+            //         justifyContent: 'space-between',
+            //         alignItems: 'center',
+            //       }}
+            //     >
+            //       <View>
+            //         <Text
+            //           style={{
+            //             color: '#9CAAC4',
+            //             fontSize: 16,
+            //             fontWeight: '600',
+            //           }}
+            //         >
+            //           Alarm
+            //         </Text>
+            //         <View
+            //           style={{
+            //             height: 25,
+            //             marginTop: 3,
+            //           }}
+            //         >
+            //           <Text style={{ fontSize: 19 }}>
+            //             {moment(selectedTask.startDateTime).format('h:mm A')}
+            //           </Text>
+            //         </View>
+            //       </View>
+            //       <Switch
+            //         value={selectedTask.alarmOn}
+            //         onValueChange={handleAlarmSet}
+            //       />
+            //     </View>
+            //     <View
+            //       style={{
+            //         flexDirection: 'row',
+            //         justifyContent: 'space-between',
+            //         alignItems: 'center',
+            //       }}
+            //     >
+            //       <CButton 
+            //         onPress = {async () => {
+            //           setIsModalVisible (state=>!state)
+            //           dispatch (updateTask (selectedTask))
+            //         }}
+            //         title = "UPDATE"
+            //         style = {{backgroundColor: '#2E66E7'}}
+            //       />
+            //       <CButton 
+            //         onPress = {async () => {
+            //           setIsModalVisible (state=>!state);
+            //           dispatch ( deleteTask (selectedTask))
+            //         }}
+            //         title = "DELETE"
+            //         style = {{backgroundColor: '#ff6347'}}
+            //       />
+            //     </View>
+            //   </View>
+            // </CModal>
+            //)
+          }
           <View
-            style={{
-              flex: 1,
-              //paddingTop: Constants.statusBarHeight,
-            }}
+            style={{flex: 1}}
           >
-            <CalendarProvider
-              date={new Date().toISOString().split('T')[0]}
-              disabledOpacity={0.6}
-            >
-              <ExpandableCalendar
-                disableAllTouchEventsForDisabledDays
-                firstDay={1}
-                markedDates={getMarkedDates()} 
-                leftArrowImageSource={require('../assets/previous.png')}
-                rightArrowImageSource={require('../assets/next.png')}
-              />
-              <AgendaList
-                sections={dateTaskList}
-                //extraData={this.state}
-                renderItem={renderItem}
-                // sectionStyle={styles.section}
-              />
-            </CalendarProvider>
-            {/* <CalendarStrip
-              calendarAnimation={{ type: 'sequence', duration: 30 }}
-              daySelectionAnimation={{
-                type: 'background',
-                duration: 200,
-                highlightColor: '#ffffff',
-              }}
-              style={{
-                height: 150,
-                paddingTop: 20,
-                paddingBottom: 20,
-              }}
-              calendarHeaderStyle={{ color: '#000000' }}
-              dateNumberStyle={{ color: '#000000', paddingTop: 10 }}
-              dateNameStyle={{ color: '#BBBBBB' }}
-              highlightDateNumberStyle={{
-                color: '#fff',
-                backgroundColor: '#2E66E7',
-                marginTop: 10,
-                height: 35,
-                width: 35,
-                textAlign: 'center',
-                borderRadius: 17.5,
-                overflow: 'hidden',
-                paddingTop: 6,
-                fontWeight: '400',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              highlightDateNameStyle={{ color: '#2E66E7' }}
-              disabledDateNameStyle={{ color: 'grey' }}
-              disabledDateNumberStyle={{ color: 'grey', paddingTop: 10 }}
-              datesWhitelist={[
-                {
-                  start: moment(),
-                  end: moment().add(365, 'days'), 
-                },
-              ]}
-              iconLeft={require('../assets/left-arrow.png')}
-              iconRight={require('../assets/right-arrow.png')}
-              iconContainer={{ flex: 0.1 }}
-              markedDates={markedDate}
-              onDateSelected={date => {
-                console.log ('stripe date: ', date)
-                // const theDate = `${moment(date).format('YYYY')}-${moment(
-                //   date
-                // ).format('MM')}-${moment(date).format('DD')}`;
-                //_updateCurrentTask(selectedDate);
-                //updateTaskListForDate (selectedDate)
-                setSelectedDate ( date.toISOString() )
-              }}
-            /> */}
-            <TouchableOpacity
-              onPress={() =>{
-                if (calendarId === ''){
-                  dispatch (setupTasks())
-                }
-                navigation.navigate('TaskCreateSC', {
-                  selectedDate
-                })
-              }}
-              style={styles.CreateTask}
-            >
-              <Image
-                source={require('../assets/plus.png')}
-                style={{height: 30, width: 30}}
-              />
-            </TouchableOpacity>
-            {/* <View
-              style={{
-                width: '100%',
-                height: Dimensions.get('window').height - 170,
-              }}
-            >
-              <ScrollView
-                contentContainerStyle={{
-                  paddingBottom: 20,
-                }}
-              >
-                {//todoList.map(item => (
-                  dateTaskList.map(item=>(
-                  <TaskBrief 
-                    onTaskPress = {() => { 
-                      setSelectedTask (item)
-                      setIsModalVisible (true)
-                      //_getEvent(item);
-                    }}
-                    item = {item}
-                    key = {item.ID}
-                  />
-                ))}
-              </ScrollView>
-            </View> */}
+            {inputCalendar}
+            {inputAddTask}
           </View>
         </>
-      )}
-    </Context.Consumer>
-  );
+  )
 }
 
 const styles = StyleSheet.create({

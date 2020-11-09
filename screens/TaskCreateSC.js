@@ -8,210 +8,375 @@ import {
   TextInput,
   Keyboard,
   Switch,
-  StyleSheet
+  StyleSheet,
+  Alert,
+  Platform,
+  LayoutAnimation
 } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
 import * as Localization from 'expo-localization';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useDispatch, useSelector} from 'react-redux'
+import { Ionicons, AntDesign } from '@expo/vector-icons';
+
 import CButton from '../components/CButton'
+import ItemChevron from '../components/ItemChevron'
 import { addTask, setupTasks}  from '../store/actions/tasks'
 
-const { width: vw } = Dimensions.get('window');
-// moment().format('YYYY/MM/DD')
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const TaskCreateSC =(props) => {
   const dispatch = useDispatch ()
   const { navigation, route } = props
+  const {alertTime} = route.params
   const calendarId = useSelector (state => state.tasks.calendarId)
   const [taskStartDateTime, setTaskStartDateTime] = useState (
-    moment (route.params.selectedDate).hours(8).minutes(0).seconds(0).format()
+    new Date(route.params.selectedDate).setHours (12,0,0)
   )
+  const [taskEndDateTime, setTaskEndDateTime] = useState (
+    new Date(route.params.selectedDate).setHours (13,0,0)
+  )
+  const [timeForStartOrEnd, setTimeForStartOrEnd] = useState('start')
   const [isAlarmSet, setIsAlermSet] = useState (false)
-  const [taskText, setTaskText] = useState ('')
+  const [isAllday, setIsAllday] = useState (true)
+  const [title, setTitle] = useState ('')
   const [notesText, setNotesText] = useState ('')
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
-  const [selectedDay, setSelectedDay] = useState({
-    [`${moment(route.params.selectedDate).format(
-      'YYYY')}-${moment(route.params.selectedDate).format(
-      'MM')}-${moment(route.params.selectedDate).format(
-      'DD' )}`]: {
-      selected: true,
-      selectedColor: '#2E66E7',
-    },
-  })
+  // const [selectedDay, setSelectedDay] = useState({
+  //   [`${moment(route.params.selectedDate).format(
+  //     'YYYY')}-${moment(route.params.selectedDate).format(
+  //     'MM')}-${moment(route.params.selectedDate).format(
+  //     'DD' )}`]: {
+  //     selected: true,
+  //     selectedColor: '#2E66E7',
+  //   },
+  // })
 
+  const [taskColor, setTaskColor] = useState(`rgb(${Math.floor(
+    Math.random() * Math.floor(256)
+  )},${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+    Math.random() * Math.floor(256)
+  )})`)
+  
   const createTask = () =>{
     if (calendarId === ''){
       dispatch ( setupTasks())
       return
     }
+
     const task = {
       calendarId: calendarId,
-      title: taskText,
+      title: title,
       notes: notesText,
       startDateTime: taskStartDateTime,
-      endDateTime: taskStartDateTime,
+      endDateTime: taskEndDateTime,
       alarmOn: isAlarmSet,
       timeZone: Localization.timezone,
-      color: `rgb(${Math.floor(
-        Math.random() * Math.floor(256)
-      )},${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-        Math.random() * Math.floor(256)
-      )})`,
+      color: taskColor,
     }
-    console.log( 'createTask () ', task)
+    //console.log( 'createTask () ', task)
     dispatch ( addTask(task) )
     navigation.navigate ('TaskHomeSC');
   }
 
   const handleTimePicked = date => {
-    console.log('_handleDatePicked...Date: ', date.toString())
-    setTaskStartDateTime (
-      date.toISOString()
-    )
+    if ( timeForStartOrEnd === 'start'){
+      setTaskStartDateTime (
+        date.toISOString()
+      )
+    }else if ( timeForStartOrEnd === 'end'){
+      if ( date.toISOString() < taskStartDateTime){
+        setTaskEndDateTime (taskStartDateTime)
+      }else {
+        setTaskEndDateTime( date.toISOString() )
+      }
+    }
     setIsDateTimePickerVisible(false)
   };
 
+  const allDayHandler = () =>{
+    LayoutAnimation.configureNext (LayoutAnimation.Presets.easeInEaseOut);
+    setIsAllday (previousState => !previousState)
+  }
+
+  const inputTitle = (
+    <View 
+      style={{flexDirection: 'row',
+      alignItems: 'center'}}
+    >
+      <View style={[styles.taskIcon, {backgroundColor: taskColor}]} />
+      <TextInput
+        style={styles.eventItemInput}
+        onChangeText={text => setTitle(text)}
+        value={title}
+        placeholder="What is in your mind"
+      />
+    </View>
+  )
+  const inputAllday = (
+    <View 
+      style = {{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <AntDesign 
+        name="clockcircleo" 
+        size={24} 
+        color={taskColor} 
+        style = {{padding: 8}} 
+      />
+      <Text style={{fontSize: 20}}>All day</Text>
+      <Switch
+        style = {{position: "absolute",right: 10}}
+        value={isAllday}
+        onValueChange={allDayHandler}
+      />
+    </View>
+  )
+
+  const displayHowFarFromToday = () =>{
+    return 'this Friday'
+  }
+  const displayHowLong = () =>{
+    return 'One Day'
+  }
+  const inputIsAllDayPanel = (
+    <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 60
+      }}
+    >
+      <View style={{
+          justifyContent: 'center',
+          width: '50%',
+          height: '100%'
+        }}
+      >
+        <Text>Start</Text>
+        <Text>{moment(taskStartDateTime).format('ddd, D MMM')}</Text>
+        <Text>{displayHowFarFromToday()}</Text>
+      </View>
+      <View style={{
+          justifyContent: 'center',
+          width: '50%',
+          height: '100%'
+        }}
+      >
+        <Text>End</Text>
+        <Text>{moment(taskEndDateTime).format('ddd, D MMM')}</Text>
+        <Text>{displayHowLong()}</Text>
+      </View> 
+    </View>
+  )
+  const inputStartEndPanel = (
+    <View 
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 50
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => {
+          setTimeForStartOrEnd ('start')
+          setIsDateTimePickerVisible(true)
+        }}
+        style={{
+          justifyContent: 'center',
+          height: '100%',
+          width: '50%',
+        }}
+      >
+        <Text>Start</Text>
+        <Text>
+          {moment(taskStartDateTime).format('M/D h:mmA')}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setTimeForStartOrEnd ('end')
+          setIsDateTimePickerVisible(true)
+        }}
+        style={{
+          justifyContent: 'center',
+          height: '100%',
+          width: '50%',
+        }}
+      >
+        <Text>End</Text>
+        <Text>
+          {moment(taskEndDateTime).format('M/D h:mmA')}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )
+  const inputDateTime = () =>{
+    if ( isAllday === false ){
+      return inputStartEndPanel
+    }else{
+      return inputIsAllDayPanel
+    }
+  }
+  const inputAlert = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <AntDesign 
+        name="bells" 
+        size={24} 
+        color={taskColor} 
+        style = {{padding: 8}} 
+      />
+      <Text style={{fontSize: 20}}>Alert</Text>
+      <ItemChevron 
+        text = {alertTime.text}
+        onPress = {() => navigation.navigate (
+          'TaskAlertSC', 
+          {alertTime}
+        )}
+      />
+    </View>
+  )
+
+  const inputLocation = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <AntDesign 
+        name="enviromento" 
+        size={24} 
+        color={taskColor} 
+        style = {{padding: 8}}
+      />
+      <Text style={{fontSize: 20}}>Location</Text>
+      <ItemChevron 
+        text = ''
+        onPress = {()=>Alert.alert('looking for location')}
+      />
+    </View>
+  )
+  const inputPeople = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <AntDesign 
+        name="meh" 
+        size={24} 
+        color = {taskColor} 
+        style = {{padding: 8}}
+      />
+      <Text style={{fontSize: 20}}>People</Text>
+      <ItemChevron 
+        onPress = {()=>Alert.alert('looking for People')}
+      />
+    </View>
+  )
+  const inputRepeat = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <AntDesign 
+        name="sync" 
+        size={24} 
+        color = {taskColor} 
+        style = {{padding: 8}}
+      />
+      <Text style={{fontSize: 20}}>Repeat</Text>
+      <ItemChevron 
+        text = 'None'
+        onPress = {()=>Alert.alert('looking for repeat')}
+      />
+    </View>
+  )
+
+  const inputNote = (
+    <View 
+      style={{flexDirection: 'row',
+      alignItems: 'center'}}
+    >
+      <AntDesign
+        name = 'menuunfold'
+        size = {24} 
+        style = {{padding: 8}}
+        color = {taskColor}
+      />
+      <TextInput
+        style={styles.eventItemInput}
+        onChangeText={text =>setNotesText( text )}
+        value={notesText}
+        placeholder="Enter notes about the task."
+      />
+    </View>
+  )
+  const inputCreateTask = (
+    <CButton 
+      disabled={title === ''}
+      style={{
+        backgroundColor:
+          title === ''
+            ? 'rgba(46, 102, 231,0.5)'
+            : '#2E66E7',
+      }}
+      onPress={ createTask }
+      title='Confirm to create'
+    />
+  )
+  const inputDateTimePicker = (
+    <DateTimePicker
+      isVisible={isDateTimePickerVisible}
+      onConfirm={handleTimePicked}
+      onCancel={()=>setIsDateTimePickerVisible(false)}
+      mode="datetime"
+      date={new Date(taskStartDateTime)}
+    />
+  )
   return (
     <>
-      <DateTimePicker
-        isVisible={isDateTimePickerVisible}
-        onConfirm={handleTimePicked}
-        onCancel={()=>setIsDateTimePickerVisible(false)}
-        mode="datetime"
-        date={new Date(taskStartDateTime)}
-      />
+      {inputDateTimePicker}
       <View style={styles.container}>
-        <View
-          style={{
-            //height: visibleHeight,
+        <ScrollView
+          contentContainerStyle={{
+            paddingTop: 10
           }}
         >
-          <ScrollView
-            contentContainerStyle={{
-              //paddingBottom: 50,
-            }}
-          >
             <View style={styles.taskContainer}>
-              <TextInput
-                style={styles.title}
-                onChangeText={text => setTaskText(text)}
-                value={taskText}
-                placeholder="what is in your mind"
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#BDC6D8',
-                  marginVertical: 10,
-                }}
-              >
-                Suggestion
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <View style={styles.readBook}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Read book
-                  </Text>
-                </View>
-                <View style={styles.design}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Design
-                  </Text>
-                </View>
-                <View style={styles.learn}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Learn
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.notesContent} />
-              <View>
-                <Text style={styles.notes}>Notes</Text>
-                <TextInput
-                  style={{
-                    height: 25,
-                    fontSize: 19,
-                    marginTop: 3,
-                  }}
-                  onChangeText={text =>setNotesText( text )}
-                  value={notesText}
-                  placeholder="Enter notes about the task."
-                />
-              </View>
+              {inputTitle}
               <View style={styles.seperator} />
-              <View>
-                <Text
-                  style={{
-                    color: '#9CAAC4',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
-                >
-                  Times
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setIsDateTimePickerVisible(true)}
-                  style={{
-                    height: 25,
-                    marginTop: 3,
-                  }}
-                >
-                  <Text style={{ fontSize: 19 }}>
-                    {moment(taskStartDateTime).format('h:mm A')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              {inputAllday}
               <View style={styles.seperator} />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <View>
-                  <Text
-                    style={{
-                      color: '#9CAAC4',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Alarm
-                  </Text>
-                  <View
-                    style={{
-                      height: 25,
-                      marginTop: 3,
-                    }}
-                  >
-                    <Text style={{ fontSize: 19 }}>
-                      {moment(taskStartDateTime).format('h:mm A')}
-                    </Text>
-                  </View>
-                </View>
-                <Switch
-                  value={isAlarmSet}
-                  onValueChange={()=>setIsAlermSet(previousState => !previousState)}
-                />
-              </View>
+              {inputDateTime()}
+              <View style={styles.seperator} />
+              {inputAlert}
+              <View style={styles.seperator} />
+              {inputLocation}
+              <View style={styles.seperator} />
+              {inputPeople}
+              <View style={styles.seperator} />
+              {inputRepeat}
+              <View style={styles.seperator} />
+              {inputNote}
+              {inputCreateTask}
             </View>
-            <CButton 
-              disabled={taskText === ''}
-              style={{
-                backgroundColor:
-                  taskText === ''
-                    ? 'rgba(46, 102, 231,0.5)'
-                    : '#2E66E7',
-              }}
-              onPress={ createTask }
-              title='Confirm to create'
-            />
-          </ScrollView>
-        </View>
+        </ScrollView>
       </View>
     </>
   );
@@ -231,46 +396,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  notesContent: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
+  taskIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 25,
+    //backgroundColor: '#73d4e3',
+    margin: 6,
   },
-  learn: {
-    height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
-    justifyContent: 'center',
-    borderRadius: 5,
-  },
-  design: {
-    height: 23,
-    width: 59,
-    backgroundColor: '#62CCFB',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  readBook: {
-    height: 23,
-    width: 83,
-    backgroundColor: '#4CD565',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  title: {
+  eventItemInput: {
     height: 25,
-    borderColor: '#5DD976',
-    borderLeftWidth: 1,
+    justifyContent: 'center',
     paddingLeft: 8,
     fontSize: 19,
   },
   taskContainer: {
-    height: 400,
-    width: 327,
+    height: 700,
+    width: 400,
     alignSelf: 'center',
     borderRadius: 20,
     shadowColor: '#2E66E7',
@@ -282,7 +423,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOpacity: 0.2,
     elevation: 5,
-    padding: 22,
+    padding: 12,
   },
   calenderContainer: {
     marginTop: 30,
