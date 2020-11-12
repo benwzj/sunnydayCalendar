@@ -14,6 +14,8 @@ import TaskHomeSC from './screens/TaskHomeSC'
 import TaskCreateSC from './screens/TaskCreateSC'
 import TaskDetailSC from './screens/TaskDetailSC'
 import TaskAlertSC from './screens/TaskAlertSC'
+import TaskLocationSC from './screens/TaskLocationSC'
+import MapSC from './screens/MapSC'
 
 const Stack = createStackNavigator();
 const ExpoCalendarNavigator = () => {
@@ -84,6 +86,16 @@ const TasksNavigator = () =>{
         component = {TaskAlertSC}
         options = {{title: 'Task Alert' }}
         initialParams = {{ alertTime: {time: -15, text:'15 minutes before'} }}
+      />
+      <Stack.Screen 
+        name = 'TaskLocationSC'
+        component = {TaskLocationSC}
+        options = {{title: 'Task Location' }}
+      />
+      <Stack.Screen 
+        name = 'MapSC'
+        component = {MapSC}
+        options = {{title: 'Map View' }}
       />
     </Stack.Navigator>
   )

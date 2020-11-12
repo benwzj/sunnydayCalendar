@@ -42,8 +42,7 @@ const TaskCreateSC =(props) => {
     new Date(route.params.selectedDate).setHours (13,0,0)
   )
   const [timeForStartOrEnd, setTimeForStartOrEnd] = useState('start')
-  const [isAlarmSet, setIsAlermSet] = useState (false)
-  const [isAllday, setIsAllday] = useState (true)
+  const [allDay, setAllDay] = useState (true)
   const [title, setTitle] = useState ('')
   const [notesText, setNotesText] = useState ('')
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
@@ -75,7 +74,8 @@ const TaskCreateSC =(props) => {
       notes: notesText,
       startDateTime: taskStartDateTime,
       endDateTime: taskEndDateTime,
-      alarmOn: isAlarmSet,
+      alarmRelativeOffset: alertTime.time,
+      allDay: allDay,
       timeZone: Localization.timezone,
       color: taskColor,
     }
@@ -101,7 +101,7 @@ const TaskCreateSC =(props) => {
 
   const allDayHandler = () =>{
     LayoutAnimation.configureNext (LayoutAnimation.Presets.easeInEaseOut);
-    setIsAllday (previousState => !previousState)
+    setAllDay (previousState => !previousState)
   }
 
   const inputTitle = (
@@ -114,7 +114,7 @@ const TaskCreateSC =(props) => {
         style={styles.eventItemInput}
         onChangeText={text => setTitle(text)}
         value={title}
-        placeholder="What is in your mind"
+        placeholder="What is on your mind"
       />
     </View>
   )
@@ -134,7 +134,7 @@ const TaskCreateSC =(props) => {
       <Text style={{fontSize: 20}}>All day</Text>
       <Switch
         style = {{position: "absolute",right: 10}}
-        value={isAllday}
+        value={allDay}
         onValueChange={allDayHandler}
       />
     </View>
@@ -146,7 +146,7 @@ const TaskCreateSC =(props) => {
   const displayHowLong = () =>{
     return 'One Day'
   }
-  const inputIsAllDayPanel = (
+  const inputAllDayPanel = (
     <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -218,10 +218,10 @@ const TaskCreateSC =(props) => {
     </View>
   )
   const inputDateTime = () =>{
-    if ( isAllday === false ){
+    if ( allDay === false ){
       return inputStartEndPanel
     }else{
-      return inputIsAllDayPanel
+      return inputAllDayPanel
     }
   }
   const inputAlert = (
@@ -264,7 +264,9 @@ const TaskCreateSC =(props) => {
       <Text style={{fontSize: 20}}>Location</Text>
       <ItemChevron 
         text = ''
-        onPress = {()=>Alert.alert('looking for location')}
+        onPress = {() => navigation.navigate (
+          'TaskLocationSC'
+        )}
       />
     </View>
   )
@@ -329,7 +331,6 @@ const TaskCreateSC =(props) => {
   )
   const inputCreateTask = (
     <CButton 
-      disabled={title === ''}
       style={{
         backgroundColor:
           title === ''

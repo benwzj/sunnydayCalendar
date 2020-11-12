@@ -3,32 +3,17 @@ import {
   View,
   Image,
   TouchableOpacity,
-  ScrollView,
   Text,
-  Dimensions,
   Button,
-  TextInput,
-  Switch,
   Alert,
   StyleSheet,
 } from 'react-native';
 import moment from 'moment';
-import Constants from 'expo-constants';
-import CalendarStrip from 'react-native-calendar-strip';
-import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useSelector, useDispatch} from 'react-redux'
 import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
 import _ from 'lodash';
 
-import { Context } from '../data/Context';
-import CModal from '../components/CModal'
-import TaskBrief from '../components/TaskBrief'
-import CButton from '../components/CButton'
-import {
-  setupTasks, 
-  updateTask, 
-  deleteTask
-} from '../store/actions/tasks'
+import { setupTasks } from '../store/actions/tasks'
 
 const TaskHomeSC = (props) =>{
   //const [currentDate, setCurrentDate] = useState (new Date().toISOString()) 
