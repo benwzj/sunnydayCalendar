@@ -13,7 +13,8 @@ import RNCExpandableSC from './screens/RNCExpandableSC'
 import TaskHomeSC from './screens/TaskHomeSC'
 import TaskCreateSC from './screens/TaskCreateSC'
 import TaskDetailSC from './screens/TaskDetailSC'
-import TaskAlertSC from './screens/TaskAlertSC'
+import TaskAlarmSC from './screens/TaskAlarmSC'
+import TaskRepeatSC from './screens/TaskRepeatSC'
 import TaskLocationSC from './screens/TaskLocationSC'
 import MapSC from './screens/MapSC'
 
@@ -74,7 +75,11 @@ const TasksNavigator = () =>{
         name = 'TaskCreateSC'
         component = {TaskCreateSC}
         options = {{title: 'Create Task' }}
-        initialParams = {{ alertTime: {time: -15, text:'15 minutes before'} }}
+        initialParams = {{ 
+          alarmTime: {time: -15, text:'15 minutes before'},
+          repeatRule: {repeat: '', test: 'NONE'},
+          locationAddress: {selected: false, location:{lat:0, lng:0}, address:''} 
+        }}
       />
       <Stack.Screen 
         name = 'TaskDetailSC'
@@ -82,15 +87,21 @@ const TasksNavigator = () =>{
         options = {{title: 'Task Detail' }}
       />
       <Stack.Screen 
-        name = 'TaskAlertSC'
-        component = {TaskAlertSC}
-        options = {{title: 'Task Alert' }}
-        initialParams = {{ alertTime: {time: -15, text:'15 minutes before'} }}
+        name = 'TaskAlarmSC'
+        component = {TaskAlarmSC}
+        options = {{title: 'Task Alarm' }}
+        //initialParams = {{ alarmTime: {time: -15, text:'15 minutes before'} }}
+      />
+      <Stack.Screen 
+        name = 'TaskRepeatSC'
+        component = {TaskRepeatSC}
+        options = {{title: 'Task Repeat' }}
       />
       <Stack.Screen 
         name = 'TaskLocationSC'
         component = {TaskLocationSC}
         options = {{title: 'Task Location' }}
+        initialParams = {{ pickedLocation: undefined}}
       />
       <Stack.Screen 
         name = 'MapSC'

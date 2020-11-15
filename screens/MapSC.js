@@ -36,8 +36,8 @@ const MapSC = props => {
           return;
         }
         navigation.navigate (
-          'NewPlaceScreen', 
-          { pickedLocation: selectedLocation }
+          'TaskLocationSC', 
+          {locationAddress: {selected: true, location: selectedLocation, address: '' }}
         );
       };
       navigation.setOptions({

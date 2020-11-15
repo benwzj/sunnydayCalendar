@@ -4,13 +4,13 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  Switch,
   StyleSheet
 } from 'react-native';
 import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux'
-import CButton from '../components/CButton'
+import { AntDesign } from '@expo/vector-icons'
+
+import MapPreview from '../components/MapPreview'
 import { deleteTask }  from '../store/actions/tasks'
 
 const TaskDetailSC =(props) => {
@@ -19,7 +19,7 @@ const TaskDetailSC =(props) => {
   const task = useSelector (state => state.tasks.taskList.find (
     task => task.ID === route.params.taskId 
   ))
-  //console.log ('TaskDetailSC task: ---', task)
+  console.log ('TaskDetailSC task: ---', task)
   if ( !task ){
     return <View><Text>Found nothing about this task </Text></View>
   }
@@ -27,124 +27,171 @@ const TaskDetailSC =(props) => {
     navigation.navigate ('TaskHomeSC')
     dispatch (deleteTask (task))
   }
+
+  const mainInfo = () =>{
+    const title = (
+      <View 
+        style = {{
+          flexDirection: 'row', 
+          alignItems: 'center',
+          paddingVertical: 12,
+        }}
+      >
+        <View style = {[styles.taskIcon, {backgroundColor: task.color}]} />
+        <Text style={{fontSize:18, fontWeight:'bold'}}>{task.title}</Text>
+      </View>
+    )
+    const allDayInfo = (
+      <Text style={{fontSize:14}}>
+        {moment(task.startDateTime).format('dddd, DD MMMM YYYY')} (all day)
+      </Text>
+    )
+    const notAllDayInfo = (
+      <>
+        <Text style={{fontSize:14}}>
+          {moment(task.startDateTime).format('dddd, DD MMMM YYYY')}
+        </Text>
+        <Text style={{fontSize:14}}>
+          {moment(task.startDateTime).format('h:mm a')} 
+          <Text> --- </Text> 
+          {moment(task.endDateTime).format('h:mm a')} 
+        </Text>
+      </>
+    )
+    const dateTime = (
+      <View 
+        style = {{ 
+          justifyContent: 'center',
+          paddingLeft: 60
+        }}
+      >
+        {task.allDay? allDayInfo: notAllDayInfo}
+      </View>
+    )
+    const repeatRule = (
+      task.repeatRule.repeat != '' ? 
+        ( <View style = {{ 
+            justifyContent: 'center',
+            paddingLeft: 60
+          }}>
+            <Text style={{fontSize:14}}>Repeats {task.repeatRule.repeat}</Text>
+          </View>)
+        : null
+    )
+    const notes = (
+      task.notes.length > 0 ? (
+        <>
+          <View style = {{ 
+            justifyContent: 'center',
+            paddingLeft: 60
+          }}>
+            <View style={styles.seperator} />
+            <Text style={{fontSize:14}}>{task.notes}</Text>
+          </View>
+        </>
+      ) : null
+    )
+    return (
+      <View style={{
+          backgroundColor: 'white',
+          width: '100%',
+          paddingVertical: 14,
+          marginTop: 25, 
+        }}
+      >
+        {title}
+        {dateTime}
+        {repeatRule}
+        {notes}
+      </View>
+    )
+  }
+
+  const location = (
+    task.locationAddress.selected? (
+      <View style={{
+        marginTop: 25, 
+        backgroundColor: 'white',
+        width: '100%',
+      }}>        
+        <MapPreview
+          style = {styles.mapPreview}
+          location = {task.locationAddress.location}
+          //onPress = {switchToMapScreen}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 12,
+          }}
+        >
+          <AntDesign 
+            name="enviromento" 
+            size={20} 
+            color={task.color} 
+            style = {{paddingHorizontal: 20}}
+          />
+          <Text style={{fontSize: 16}}>
+            {task.locationAddress.address}
+          </Text>
+        </View>
+      </View>
+    ) : null
+  )
+
+  const alarm = (
+    <View style={{
+      backgroundColor: 'white',
+      width: '100%',
+      paddingVertical: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 25, 
+    }}
+    >
+      <AntDesign 
+        name="bells" 
+        size={20} 
+        color={task.color} 
+        style = {{paddingHorizontal: 20}}
+      />
+      <Text style={{fontSize: 16}}>
+        {task.alarmTime.text}
+      </Text>
+    </View>
+  )
+
+  const deleteButton = (
+    <View 
+      style={{backgroundColor: 'white', 
+        marginTop: 25, 
+        paddingVertical: 12
+      }}
+    >
+      <TouchableOpacity 
+        style={{
+          alignItems:'center', 
+          justifyContent: 'center'
+        }}
+        onPress={removeTask}
+      >
+        <Text style={{color: 'red', fontSize: 18}}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  )
   return (
     <>
       <View style={styles.container}>
           <ScrollView
             contentContainerStyle={{
-              paddingBottom: 50,
+              //paddingVertical: 20,
             }}
           >
-            <View style={styles.taskContainer}>
-              <TextInput
-                style={styles.title}
-                onChangeText={text => setTaskText(text)}
-                value={task.title}
-                placeholder="what is in your mind"
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#BDC6D8',
-                  marginVertical: 10,
-                }}
-              >
-                Suggestion
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <View style={styles.readBook}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Read book
-                  </Text>
-                </View>
-                <View style={styles.design}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Design
-                  </Text>
-                </View>
-                <View style={styles.learn}>
-                  <Text style={{ textAlign: 'center', fontSize: 14 }}>
-                    Learn
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.notesContent} />
-              <View>
-                <Text style={styles.notes}>Notes</Text>
-                <TextInput
-                  style={{
-                    height: 25,
-                    fontSize: 19,
-                    marginTop: 3,
-                  }}
-                  //onChangeText={text =>setNotesText( text )}
-                  value={task.notes}
-                  placeholder="Enter notes about the task."
-                />
-              </View>
-              <View style={styles.seperator} />
-              <View>
-                <Text
-                  style={{
-                    color: '#9CAAC4',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
-                >
-                  Times
-                </Text>
-                <TouchableOpacity
-                  //onPress={() => setIsDateTimePickerVisible(true)}
-                  style={{
-                    height: 25,
-                    marginTop: 3,
-                  }}
-                >
-                  <Text style={{ fontSize: 19 }}>
-                    {moment(task.startDateTime).format('h:mm A')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.seperator} />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <View>
-                  <Text
-                    style={{
-                      color: '#9CAAC4',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Alarm
-                  </Text>
-                  <View
-                    style={{
-                      height: 25,
-                      marginTop: 3,
-                    }}
-                  >
-                    <Text style={{ fontSize: 19 }}>
-                      
-                      {moment(task.startDateTime).format('h:mm A')}
-                    </Text>
-                  </View>
-                </View>
-                <Switch
-                  value={task.alarmOn}
-                  //onValueChange={()=>setIsAlermSet(previousState => !previousState)}
-                />
-              </View>
-            </View>
-            <CButton 
-              onPress={ removeTask }
-              title='Delete This Task'
-            />
+            {mainInfo()}
+            {location}
+            {alarm}
+            {deleteButton}
           </ScrollView>
       </View>
     </>
@@ -157,89 +204,21 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#979797',
     alignSelf: 'center',
-    marginVertical: 20,
-  },
-  notes: {
-    color: '#9CAAC4',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  notesContent: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  learn: {
-    height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
-    justifyContent: 'center',
-    borderRadius: 5,
-  },
-  design: {
-    height: 23,
-    width: 59,
-    backgroundColor: '#62CCFB',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  readBook: {
-    height: 23,
-    width: 83,
-    backgroundColor: '#4CD565',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  title: {
-    height: 25,
-    borderColor: '#5DD976',
-    borderLeftWidth: 1,
-    paddingLeft: 8,
-    fontSize: 19,
-  },
-  taskContainer: {
-    height: 400,
-    width: 327,
-    alignSelf: 'center',
-    borderRadius: 20,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 20,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    padding: 22,
-  },
-  calenderContainer: {
-    marginTop: 30,
-    width: 350,
-    height: 350,
-    alignSelf: 'center',
-  },
-  newTask: {
-    alignSelf: 'center',
-    fontSize: 20,
-    width: 120,
-    height: 25,
-    textAlign: 'center',
-  },
-  backButton: {
-    flexDirection: 'row',
-    marginTop: 60,
-    width: '100%',
-    alignItems: 'center',
+    marginVertical: 5,
   },
   container: {
     flex: 1,
-    //paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#eaeef7',
+    backgroundColor: '#eaeef7'
+  },
+  taskIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 25,
+    marginHorizontal: 20,
+  },
+  mapPreview: {
+    width: '100%',
+    height: 100,
   },
 });
 

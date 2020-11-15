@@ -3,10 +3,8 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
   TextInput,
-  Keyboard,
   Switch,
   StyleSheet,
   Alert,
@@ -17,9 +15,9 @@ import moment from 'moment';
 import * as Localization from 'expo-localization';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {useDispatch, useSelector} from 'react-redux'
-import { Ionicons, AntDesign } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons'
 
-import CButton from '../components/CButton'
+import MapPreview from '../components/MapPreview'
 import ItemChevron from '../components/ItemChevron'
 import { addTask, setupTasks}  from '../store/actions/tasks'
 
@@ -33,28 +31,20 @@ if (
 const TaskCreateSC =(props) => {
   const dispatch = useDispatch ()
   const { navigation, route } = props
-  const {alertTime} = route.params
+  const {alarmTime,repeatRule, locationAddress, selectedDate} = route.params
   const calendarId = useSelector (state => state.tasks.calendarId)
   const [taskStartDateTime, setTaskStartDateTime] = useState (
-    new Date(route.params.selectedDate).setHours (12,0,0)
+    new Date(selectedDate).setHours (12,0,0)
   )
   const [taskEndDateTime, setTaskEndDateTime] = useState (
-    new Date(route.params.selectedDate).setHours (13,0,0)
+    new Date(selectedDate).setHours (13,0,0)
   )
   const [timeForStartOrEnd, setTimeForStartOrEnd] = useState('start')
+
   const [allDay, setAllDay] = useState (true)
   const [title, setTitle] = useState ('')
   const [notesText, setNotesText] = useState ('')
-  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState (false)
-  // const [selectedDay, setSelectedDay] = useState({
-  //   [`${moment(route.params.selectedDate).format(
-  //     'YYYY')}-${moment(route.params.selectedDate).format(
-  //     'MM')}-${moment(route.params.selectedDate).format(
-  //     'DD' )}`]: {
-  //     selected: true,
-  //     selectedColor: '#2E66E7',
-  //   },
-  // })
+  const [dateTimePicker, setDateTimePicker] = useState ({visible: false, mode: 'datetime'})
 
   const [taskColor, setTaskColor] = useState(`rgb(${Math.floor(
     Math.random() * Math.floor(256)
@@ -73,13 +63,14 @@ const TaskCreateSC =(props) => {
       title: title,
       notes: notesText,
       startDateTime: taskStartDateTime,
-      endDateTime: taskEndDateTime,
-      alarmRelativeOffset: alertTime.time,
+      endDateTime: taskEndDateTime > taskStartDateTime ? taskEndDateTime: taskStartDateTime,
+      alarmTime: alarmTime,
       allDay: allDay,
+      locationAddress: locationAddress,
       timeZone: Localization.timezone,
       color: taskColor,
+      repeatRule: repeatRule,
     }
-    //console.log( 'createTask () ', task)
     dispatch ( addTask(task) )
     navigation.navigate ('TaskHomeSC');
   }
@@ -96,7 +87,7 @@ const TaskCreateSC =(props) => {
         setTaskEndDateTime( date.toISOString() )
       }
     }
-    setIsDateTimePickerVisible(false)
+    setDateTimePicker({visible:false, mode: 'datetime'})
   };
 
   const allDayHandler = () =>{
@@ -106,32 +97,41 @@ const TaskCreateSC =(props) => {
 
   const inputTitle = (
     <View 
-      style={{flexDirection: 'row',
-      alignItems: 'center'}}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 25, 
+        backgroundColor: 'white',
+        paddingVertical: 15,
+        paddingHorizontal: 20
+      }}
     >
       <View style={[styles.taskIcon, {backgroundColor: taskColor}]} />
       <TextInput
-        style={styles.eventItemInput}
+        style={{fontSize:18, paddingLeft: 15}}
         onChangeText={text => setTitle(text)}
         value={title}
         placeholder="What is on your mind"
       />
     </View>
-  )
+  ) 
   const inputAllday = (
     <View 
       style = {{
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 25, 
+        backgroundColor: 'white',
+        paddingVertical: 15,
+        paddingHorizontal: 20
       }}
     >
       <AntDesign 
         name="clockcircleo" 
-        size={24} 
+        size={20} 
         color={taskColor} 
-        style = {{padding: 8}} 
       />
-      <Text style={{fontSize: 20}}>All day</Text>
+      <Text style={{fontSize: 20, paddingLeft: 15}}>All day</Text>
       <Switch
         style = {{position: "absolute",right: 10}}
         value={allDay}
@@ -141,52 +141,68 @@ const TaskCreateSC =(props) => {
   )
 
   const displayHowFarFromToday = () =>{
+    // calculate the string to describe How far from now
     return 'this Friday'
   }
   const displayHowLong = () =>{
+    // calculate string for how long
     return 'One Day'
   }
   const inputAllDayPanel = (
     <View style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 60
+        height: 60,
+        backgroundColor: 'white',
+        paddingVertical: 15,
+        paddingLeft: 55
       }}
     >
-      <View style={{
+      <TouchableOpacity style={{
           justifyContent: 'center',
           width: '50%',
           height: '100%'
+        }}
+        onPress={() => {
+          setTimeForStartOrEnd ('start')
+          setDateTimePicker({visible:true, mode:'date'})
         }}
       >
         <Text>Start</Text>
         <Text>{moment(taskStartDateTime).format('ddd, D MMM')}</Text>
         <Text>{displayHowFarFromToday()}</Text>
-      </View>
-      <View style={{
+      </TouchableOpacity>
+      <TouchableOpacity style={{
           justifyContent: 'center',
           width: '50%',
           height: '100%'
+        }}
+        onPress={() => {
+          setTimeForStartOrEnd ('end')
+          setDateTimePicker({visible:true, mode:'date'})
         }}
       >
         <Text>End</Text>
         <Text>{moment(taskEndDateTime).format('ddd, D MMM')}</Text>
         <Text>{displayHowLong()}</Text>
-      </View> 
+      </TouchableOpacity> 
     </View>
   )
-  const inputStartEndPanel = (
+  const inputNotAllDayPanel = (
     <View 
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 50
+        height: 50,
+        backgroundColor: 'white',
+        paddingVertical: 15,
+        paddingLeft: 55
       }}
     >
       <TouchableOpacity
         onPress={() => {
           setTimeForStartOrEnd ('start')
-          setIsDateTimePickerVisible(true)
+          setDateTimePicker({visible:true, mode:'datetime'})
         }}
         style={{
           justifyContent: 'center',
@@ -202,7 +218,7 @@ const TaskCreateSC =(props) => {
       <TouchableOpacity
         onPress={() => {
           setTimeForStartOrEnd ('end')
-          setIsDateTimePickerVisible(true)
+          setDateTimePicker({visible:true, mode:'datetime'})
         }}
         style={{
           justifyContent: 'center',
@@ -219,110 +235,146 @@ const TaskCreateSC =(props) => {
   )
   const inputDateTime = () =>{
     if ( allDay === false ){
-      return inputStartEndPanel
+      return inputNotAllDayPanel
     }else{
       return inputAllDayPanel
     }
   }
-  const inputAlert = (
-    <View
+  const inputAlarm = (
+    <TouchableOpacity
       style={{
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        backgroundColor: 'white'
       }}
+      onPress = {() => navigation.navigate (
+        'TaskAlarmSC', 
+        {alarmTime}
+      )}
     >
       <AntDesign 
         name="bells" 
-        size={24} 
+        size={20} 
         color={taskColor} 
-        style = {{padding: 8}} 
       />
-      <Text style={{fontSize: 20}}>Alert</Text>
+      <Text style={{fontSize: 18, paddingLeft: 20}}>Alarm</Text>
       <ItemChevron 
-        text = {alertTime.text}
-        onPress = {() => navigation.navigate (
-          'TaskAlertSC', 
-          {alertTime}
-        )}
+        text = {alarmTime.text}
+        
       />
-    </View>
+    </TouchableOpacity>
   )
 
   const inputLocation = (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+    <TouchableOpacity style={{
+        marginTop: 20,
+      }}
+      onPress = {() => {
+        navigation.navigate (
+          'TaskLocationSC', {locationAddress: locationAddress}
+        )
       }}
     >
-      <AntDesign 
-        name="enviromento" 
-        size={24} 
-        color={taskColor} 
-        style = {{padding: 8}}
-      />
-      <Text style={{fontSize: 20}}>Location</Text>
-      <ItemChevron 
-        text = ''
-        onPress = {() => navigation.navigate (
-          'TaskLocationSC'
-        )}
-      />
-    </View>
+      {locationAddress.selected ? 
+        <MapPreview
+          style = {styles.mapPreview}
+          location = {locationAddress.location}
+        />
+        : null}
+      <View
+        style = {{
+          flexDirection: 'row',
+          paddingVertical: 14,
+          paddingHorizontal: 20,
+          alignItems: 'center',
+          backgroundColor: 'white'
+        }}
+      >
+        <AntDesign 
+          name="enviromento" 
+          size={20} 
+          color={taskColor} 
+        />
+        <Text style={{fontSize: 18, paddingLeft: 20}}>
+        {locationAddress.selected ? locationAddress.address:'Location'}
+        </Text>
+        <ItemChevron text = '' />
+        
+      </View>
+    </TouchableOpacity>
   )
   const inputPeople = (
-    <View
+    <TouchableOpacity
       style={{
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        backgroundColor: 'white'
       }}
+      onPress = {()=>Alert.alert('looking for People')}
     >
       <AntDesign 
         name="meh" 
-        size={24} 
+        size={20} 
         color = {taskColor} 
-        style = {{padding: 8}}
       />
-      <Text style={{fontSize: 20}}>People</Text>
+      <Text style={{fontSize: 18, paddingLeft: 20}}>People</Text>
       <ItemChevron 
-        onPress = {()=>Alert.alert('looking for People')}
+        
       />
-    </View>
+    </TouchableOpacity>
   )
   const inputRepeat = (
-    <View
+    <TouchableOpacity
       style={{
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        backgroundColor: 'white'
       }}
+      onPress = {() => navigation.navigate (
+        'TaskRepeatSC', 
+        {repeatRule}
+      )}
+      
     >
       <AntDesign 
         name="sync" 
-        size={24} 
+        size={20} 
         color = {taskColor} 
-        style = {{padding: 8}}
       />
-      <Text style={{fontSize: 20}}>Repeat</Text>
+      <Text style={{fontSize: 18, paddingLeft: 20}}>Repeat</Text>
       <ItemChevron 
-        text = 'None'
-        onPress = {()=>Alert.alert('looking for repeat')}
+        text = {repeatRule.text}
       />
-    </View>
+    </TouchableOpacity>
   )
 
   const inputNote = (
     <View 
-      style={{flexDirection: 'row',
-      alignItems: 'center'}}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        backgroundColor: 'white'
+      }}
     >
       <AntDesign
         name = 'menuunfold'
-        size = {24} 
-        style = {{padding: 8}}
+        size = {20} 
         color = {taskColor}
       />
       <TextInput
-        style={styles.eventItemInput}
+        style={{fontSize: 18, paddingLeft: 20}}
         onChangeText={text =>setNotesText( text )}
         value={notesText}
         placeholder="Enter notes about the task."
@@ -330,23 +382,30 @@ const TaskCreateSC =(props) => {
     </View>
   )
   const inputCreateTask = (
-    <CButton 
-      style={{
-        backgroundColor:
-          title === ''
-            ? 'rgba(46, 102, 231,0.5)'
-            : '#2E66E7',
+    <View 
+      style={{backgroundColor: 'white', 
+        //marginTop: 25, 
+        paddingVertical: 12,
+        marginVertical: 25
       }}
-      onPress={ createTask }
-      title='Confirm to create'
-    />
+    >
+      <TouchableOpacity 
+        style={{
+          alignItems:'center', 
+          justifyContent: 'center'
+        }}
+        onPress={createTask}
+      >
+        <Text style={{color: 'blue', fontSize:18}}>Create</Text>
+      </TouchableOpacity>
+    </View>
   )
   const inputDateTimePicker = (
     <DateTimePicker
-      isVisible={isDateTimePickerVisible}
+      isVisible={dateTimePicker.visible}
       onConfirm={handleTimePicked}
-      onCancel={()=>setIsDateTimePickerVisible(false)}
-      mode="datetime"
+      onCancel={()=>setDateTimePicker({visible:false, mode: 'datetime'})}
+      mode={dateTimePicker.mode}
       date={new Date(taskStartDateTime)}
     />
   )
@@ -361,19 +420,12 @@ const TaskCreateSC =(props) => {
         >
             <View style={styles.taskContainer}>
               {inputTitle}
-              <View style={styles.seperator} />
               {inputAllday}
-              <View style={styles.seperator} />
               {inputDateTime()}
-              <View style={styles.seperator} />
-              {inputAlert}
-              <View style={styles.seperator} />
+              {inputAlarm}
               {inputLocation}
-              <View style={styles.seperator} />
-              {inputPeople}
-              <View style={styles.seperator} />
+              {/* inputPeople */}
               {inputRepeat}
-              <View style={styles.seperator} />
               {inputNote}
               {inputCreateTask}
             </View>
@@ -398,11 +450,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   taskIcon: {
-    width: 28,
-    height: 28,
+    width: 20,
+    height: 20,
     borderRadius: 25,
-    //backgroundColor: '#73d4e3',
-    margin: 6,
   },
   eventItemInput: {
     height: 25,
@@ -411,20 +461,7 @@ const styles = StyleSheet.create({
     fontSize: 19,
   },
   taskContainer: {
-    height: 700,
-    width: 400,
-    alignSelf: 'center',
-    borderRadius: 20,
-    shadowColor: '#2E66E7',
-    backgroundColor: '#ffffff',
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowRadius: 20,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    padding: 12,
+
   },
   calenderContainer: {
     marginTop: 30,
@@ -449,6 +486,10 @@ const styles = StyleSheet.create({
     flex: 1,
     //paddingTop: Constants.statusBarHeight,
     backgroundColor: '#eaeef7',
+  },
+  mapPreview: {
+    width: '100%',
+    height: 100,
   },
 });
 

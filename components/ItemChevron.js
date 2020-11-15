@@ -1,23 +1,21 @@
 import React from 'react'
-import { TouchableOpacity, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons'
 
 const ItemChevron = (props) =>{
-  const {text, onPress} = props
+  const {text} = props
   return (
-    <TouchableOpacity 
+    <View 
       style = {styles.container}
-      onPress = {onPress}
     >
       {(text || text==='') && <Text style={styles.text}>{text}</Text>}
       <Ionicons name="ios-arrow-forward" size={24} color="grey" />
-    </TouchableOpacity>
+    </View>
   )
 }
 ItemChevron.propTypes = {
   text: PropTypes.string,
-  onPress: PropTypes.func,
 };
 
 const styles = StyleSheet.create ({
@@ -29,7 +27,7 @@ const styles = StyleSheet.create ({
     right: 10
   },
   text: {
-    paddingHorizontal: 4, 
+    paddingHorizontal: 12, 
     color:'grey', 
     fontSize: 20
   }

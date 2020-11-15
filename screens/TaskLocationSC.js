@@ -14,17 +14,32 @@ import * as ExpoLocation from 'expo-location';
 import * as ExpoPermissions from 'expo-permissions';
 
 import MapPreview from '../components/MapPreview';
+import ENV from '../env'
+
+//
+// depending on props.route.params.locationAddress
+// locationAddress = {selected: false, location: {lat:0, lng:0}, address:''}
 
 const TaskLocationSC = props => {
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState();
-
-  const locationFromMap = props.route.params.pickedLocation;
+  const [selectedAddress, setSelectedAddress] = useState('')
+  
+  //const locationFromMap = props.route.params.pickedLocation;
+  const locationAddress = props.route.params.locationAddress;
+  console.log('props.route.params.locationAddress: ', locationAddress)
   useEffect(() => {
-    if ( locationFromMap ) {
-      setSelectedLocation ( locationFromMap );
+    const updateLocationAddress = async() =>{ 
+      if ( locationAddress ) {
+        if ( locationAddress.selected ){
+          setSelectedLocation ( locationAddress.location )
+          const address = await getAddressFromLocation (locationAddress.location)
+          setSelectedAddress (address)
+        }
+      }
     }
-  }, [locationFromMap]);
+    updateLocationAddress ()
+  }, [locationAddress]);
 
   const verifyPermissions = async () => {
     const result = await ExpoPermissions.askAsync(ExpoPermissions.LOCATION);
@@ -66,20 +81,48 @@ const TaskLocationSC = props => {
 
   const switchToMapScreen = () => {
     props.navigation.navigate (
-      'MapScreen',
+      'MapSC',
       { initialLocation: undefined, readonly: false }
     );
   };
 
+  const getAddressFromLocation = async (location) =>{
+    try{
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${
+          location.lat
+        },${location.lng}&key=${ENV.googleApiKey}`
+      );
+
+      if (!response.ok) {
+        const errorResData = await response.json();
+        throw new Error (errorResData.error.message);
+      }
+
+      const resData = await response.json();
+      if (!resData.results) {
+        throw new Error(resData.error.message);
+      }
+      return resData.results[0].formatted_address;
+    }catch (e){
+      console.log ( e )
+      return ''
+    }
+  }
+
   const savePlaceHandler = () => {
     //dispatch ( placeAdd (titleValue, selectedImage, selectedLocation) );
-    props.navigation.navigate('TaskCreateSC', {selectedLocation});
+    //const address = await getAddressFromLocation (selectedLocation)
+    const locationAddress = {address: selectedAddress, selected: true, location: selectedLocation}
+    //console.log ( 'locationAddress: ', locationAddress)
+    props.navigation.navigate ('TaskCreateSC', {locationAddress});
   };
 
   return (
     <ScrollView>
       <View style={styles.form}>
         <View style = {styles.LocationPicker}>
+          <Text>{selectedAddress}</Text>
           <MapPreview
             style = {styles.mapPreview}
             location = {selectedLocation}
@@ -105,7 +148,7 @@ const TaskLocationSC = props => {
           </View>
         </View>
         <Button
-          title = "Save Place"
+          title = "Select Place"
           color = 'blue'
           onPress = {savePlaceHandler}
         />
@@ -140,7 +183,7 @@ const styles = StyleSheet.create({
   mapPreview: {
     marginBottom: 10,
     width: '100%',
-    height: 150,
+    height: 350,
     borderColor: '#ccc',
     borderWidth: 1
   },

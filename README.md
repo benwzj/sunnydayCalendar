@@ -44,6 +44,10 @@ tasks{
       "color": "rgb(243,216,133)",
       "notes": "Hi",
       "title": "Hi, how are you",
+      alarmRelativeOffset: alertTime.time,
+      allDay: allDay,
+      locationAddress: locationAddress,
+      timeZone: Localization.timezone,
     },
   ],
 }
@@ -63,3 +67,6 @@ section structure:
     },
   ]
 },
+
+locationAddress = {selected: false, location: {lat:0, lng:0}, address:''}
+alertTime = {time: 1, text:'None'},

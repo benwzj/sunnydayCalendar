@@ -70,12 +70,15 @@ export const addTask = (task) => {
           title: task.title,
           startDate: task.startDateTime,
           endDate: task.endDateTime,
-          alarms: task.alarmRelativeOffset>0 ? [] : [{relativeOffset: task.alarmRelativeOffset}],
+          alarms: task.alarmTime.time>0 ? [] : [{relativeOffset: task.alarmTime.time}],
           allDay: task.allDay,
           notes: task.notes,
-          timeZone: task.timeZone
+          timeZone: task.timeZone,
+          location: task.locationAddress.address,
+          recurrenceRule: {frequency: task.repeatRule.repeat}
         }
       )
+      console.log('ExpoCalendar.Frequency:',ExpoCalendar.Frequency)
       const tasksString = await AsyncStorage.getItem(SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
       tasks.taskList.push ({...task, ID:taskId})
@@ -129,9 +132,7 @@ export const updateTask = (task) => {
 export const deleteTask = ( task ) => {
   return async (dispatch) => {
     try {
-      
       await ExpoCalendar.deleteEventAsync (task.ID);
-
       const tasksString = await AsyncStorage.getItem (SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
       const updatedTaskList = tasks.taskList.filter(item=>item.ID != task.ID)

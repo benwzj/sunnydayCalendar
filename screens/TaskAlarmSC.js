@@ -6,7 +6,7 @@ import {View,
   TouchableOpacity} from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
 
-const alertData = [
+const alarmData = [
   {time: 1, text:'None'},
   {time: 0, text:'At time of event'},
   {time: -5, text:'5 minutes before'},
@@ -18,22 +18,22 @@ const alertData = [
   {time: -60*24*7, text:'1 week before'}
 ]
 
-const TaskAlertSC = (props) =>{
+const TaskAlarmSC = (props) =>{
   const {navigation, route} = props
-  const {alertTime} = route.params
+  const {alarmTime} = route.params
   const itemView = (index, item) =>{
     return (
       <TouchableOpacity style={styles.item}
         key={index}
-        onPress={()=>{navigation.navigate('TaskCreateSC', {alertTime: item})}}
+        onPress={()=>{navigation.navigate('TaskCreateSC', {alarmTime: item})}}
       >
         <Text style={{fontSize:14}}>{item.text}</Text>
-        {item.time === alertTime.time && <AntDesign name="check" size={24} color="blue" />}
+        {item.time === alarmTime.time && <AntDesign name="check" size={24} color="blue" />}
       </TouchableOpacity>
     )
   }
-  const displayAlertItems = () =>{
-    return alertData.map (
+  const displayAlarmItems = () =>{
+    return alarmData.map (
       (item, index) => itemView(index,item)
     )  
   }
@@ -41,7 +41,7 @@ const TaskAlertSC = (props) =>{
     <View style={styles.container}>
       <ScrollView>
         <View style={{paddingTop: 40}}>
-          {displayAlertItems()}
+          {displayAlarmItems()}
         </View>
       </ScrollView>
     </View>
@@ -63,4 +63,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default TaskAlertSC
+export default TaskAlarmSC
