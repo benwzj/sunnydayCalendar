@@ -15,6 +15,9 @@ import TaskCreateSC from './screens/TaskCreateSC'
 import TaskDetailSC from './screens/TaskDetailSC'
 import TaskAlarmSC from './screens/TaskAlarmSC'
 import TaskRepeatSC from './screens/TaskRepeatSC'
+import TaskRepeatIntervalSC from './screens/TaskRepeatIntervalSC'
+import TaskRepeatUntilSC from './screens/TaskRepeatUntilSC'
+import TaskRepeatOnDaysSC from './screens/TaskRepeatOnDaysSC'
 import TaskLocationSC from './screens/TaskLocationSC'
 import MapSC from './screens/MapSC'
 
@@ -96,6 +99,32 @@ const TasksNavigator = () =>{
         name = 'TaskRepeatSC'
         component = {TaskRepeatSC}
         options = {{title: 'Task Repeat' }}
+        initialParams = {{ 
+          currentInterval: {mode: 'daily', current: 1},
+          repeatRule: {repeat: '', text:'None'},
+          repeatUntilDate: null,
+          onDaysRule: {mode: 'weekly', days:[]}
+        }}
+      />
+      <Stack.Screen 
+        name = 'TaskRepeatIntervalSC'
+        component = {TaskRepeatIntervalSC}
+        options = {{title: 'Task Repeat Interval' }}
+      />
+      <Stack.Screen 
+        name = 'TaskRepeatUntilSC'
+        component = {TaskRepeatUntilSC}
+        options = {{title: 'Task Repeat Until' }}
+        initialParams = {{ 
+          repeatUntilDate: null
+        }}
+      /><Stack.Screen 
+        name = 'TaskRepeatOnDaysSC'
+        component = {TaskRepeatOnDaysSC}
+        options = {{title: 'Task Repeat On Days' }}
+        initialParams = {{ 
+          mode: 'weekly', days: ['Sunday']
+        }}
       />
       <Stack.Screen 
         name = 'TaskLocationSC'

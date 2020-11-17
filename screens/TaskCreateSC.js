@@ -263,7 +263,6 @@ const TaskCreateSC =(props) => {
       <Text style={{fontSize: 18, paddingLeft: 20}}>Alarm</Text>
       <ItemChevron 
         text = {alarmTime.text}
-        
       />
     </TouchableOpacity>
   )
@@ -329,6 +328,7 @@ const TaskCreateSC =(props) => {
       />
     </TouchableOpacity>
   )
+
   const inputRepeat = (
     <TouchableOpacity
       style={{
@@ -341,7 +341,7 @@ const TaskCreateSC =(props) => {
       }}
       onPress = {() => navigation.navigate (
         'TaskRepeatSC', 
-        {repeatRule}
+        {selectedDate, repeatRule}
       )}
       
     >

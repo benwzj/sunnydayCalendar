@@ -7,34 +7,25 @@ import {View,
 from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
 
-const alarmData = [
-  {time: 1, text:'None'},
-  {time: 0, text:'At time of event'},
-  {time: -5, text:'5 minutes before'},
-  {time: -15, text:'15 minutes before'},
-  {time: -30, text:'30 minutes before'},
-  {time: -60, text:'1 hour before'},
-  {time: -120, text:'2 hours before'},
-  {time: -60*24, text:'1 day before'},
-  {time: -60*24*7, text:'1 week before'}
-]
+//currentInterval = {mode: 'daily', current: 1, interval: [...]}
 
-const TaskAlarmSC = (props) =>{
+const TaskRepeatIntervalSC = (props) =>{
   const {navigation, route} = props
-  const {alarmTime} = route.params
+  const {currentInterval} = route.params
   const itemView = (index, item) =>{
     return (
       <TouchableOpacity style={styles.item}
         key={index}
-        onPress={()=>{navigation.navigate('TaskCreateSC', {alarmTime: item})}}
+        onPress={()=>{navigation.navigate('TaskRepeatSC', {currentInterval: {mode: currentInterval.mode, current: index+1}})}}
       >
-        <Text style={{fontSize:14}}>{item.text}</Text>
-        {item.time === alarmTime.time && <AntDesign name="check" size={24} color="blue" />}
+        <Text style={{fontSize:14}}>{item}</Text>
+        {index === currentInterval.current-1 && 
+          <AntDesign name="check" size={24} color="blue" />}
       </TouchableOpacity>
     )
   }
   const displayAlarmItems = () =>{
-    return alarmData.map (
+    return currentInterval.interval.map (
       (item, index) => itemView(index,item)
     )  
   }
@@ -64,4 +55,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default TaskAlarmSC
+export default TaskRepeatIntervalSC

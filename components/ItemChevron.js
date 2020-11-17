@@ -10,7 +10,7 @@ const ItemChevron = (props) =>{
       style = {styles.container}
     >
       {(text || text==='') && <Text style={styles.text}>{text}</Text>}
-      <Ionicons name="ios-arrow-forward" size={24} color="grey" />
+      <Ionicons name="ios-arrow-forward" size={16} color="grey" />
     </View>
   )
 }
@@ -29,7 +29,7 @@ const styles = StyleSheet.create ({
   text: {
     paddingHorizontal: 12, 
     color:'grey', 
-    fontSize: 20
+    fontSize: 16
   }
 })
 
