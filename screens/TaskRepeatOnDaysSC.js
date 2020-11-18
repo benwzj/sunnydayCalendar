@@ -9,7 +9,7 @@ import {
 import { AntDesign } from '@expo/vector-icons'
 import { HeaderBackButton } from '@react-navigation/stack'
 
-// onDaysRule = {mode: 'weekly', days: [{name:'Monday', ticked: false},,,,]}
+// onDaysRule = {mode: 'weekly', days: [{name:'Monday', ticked: false}]}
 
 const TaskRepeatOnDaysSC = (props) =>{
   const {navigation, route} = props

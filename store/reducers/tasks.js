@@ -35,7 +35,7 @@ export const tasksReducer = (state = initialState, action) =>{
             task
           ]
         }
-        console.log( 'ADD_TASK reducer', returnObj)
+        //console.log( 'ADD_TASK reducer', returnObj)
         return returnObj
       }
     case UPDATE_TASK:
@@ -54,7 +54,7 @@ export const tasksReducer = (state = initialState, action) =>{
               ...state.taskList
             ]
           }
-          console.log( 'UPDATE_TASK reducer:', returnObj)
+          //console.log( 'UPDATE_TASK reducer:', returnObj)
           return returnObj
         }else {
           return state
@@ -71,7 +71,7 @@ export const tasksReducer = (state = initialState, action) =>{
             ...updatedTaskList
           ]
         }
-        console.log ('DELETE_TASK reducer:', returnObj )
+        //console.log ('DELETE_TASK reducer:', returnObj )
         return returnObj
 
     default: 

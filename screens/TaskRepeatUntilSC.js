@@ -8,10 +8,13 @@ from 'react-native'
 import { HeaderBackButton } from '@react-navigation/stack'
 import { AntDesign } from '@expo/vector-icons'
 import moment from 'moment'
+import { Calendar } from 'react-native-calendars';
+
+//repeatUntilDate is '2020-11-18'
 
 const TaskRepeatUntilSC = (props) =>{
   const {navigation, route} = props
-  const {repeatUntilDate} = route.params
+  const {repeatUntilDate, selectedDate} = route.params
   const [untilDate, setUntilDate] = useState (repeatUntilDate)
   useEffect (()=>{
     navigation.setOptions ({ 
@@ -48,7 +51,14 @@ const TaskRepeatUntilSC = (props) =>{
   const displayDateSelection = (
     untilDate != null ? (
       <View style = {{marginTop: 20}}>
-        <Text>Displaying a calendar selection...</Text>
+        <Calendar
+          current={selectedDate}
+          minDate={selectedDate}
+          onDayPress={(day) => {setUntilDate(day.dateString)}}
+          markedDates={{
+            [untilDate]: { selected: true, selectedColor: 'purple'},
+          }}
+        />
       </View>
     ) : (
       null
@@ -65,6 +75,7 @@ const TaskRepeatUntilSC = (props) =>{
     </View>
   )
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

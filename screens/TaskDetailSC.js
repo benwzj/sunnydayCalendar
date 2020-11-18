@@ -28,6 +28,29 @@ const TaskDetailSC =(props) => {
     dispatch (deleteTask (task))
   }
 
+  const repeatText = (repeatRule) =>{
+    console.log('repeatRule:', repeatRule)
+    let text = ''
+    if ( repeatRule.repeat === 'daily' ){
+      text = 'Daily'
+      if (repeatRule.interval === 1) {
+        text += ' (Every Day)'
+      }else if (repeatRule.interval > 1) {
+        text += ` (Every ${repeatRule.interval} Days)`
+      }
+    }
+    if ( repeatRule.repeat === 'weekly' ){
+      text = 'Weekly'
+      if (repeatRule.interval === 1) {
+        text += ' (Every Week)'
+      }else if (repeatRule.interval > 1) {
+        text += ` (Every ${repeatRule.interval} Weeks)`
+      }
+      text += ` On ${repeatRule.onDays?.join()}`
+    }
+    return text
+  }
+
   const mainInfo = () =>{
     const title = (
       <View 
@@ -74,7 +97,7 @@ const TaskDetailSC =(props) => {
             justifyContent: 'center',
             paddingLeft: 60
           }}>
-            <Text style={{fontSize:14}}>Repeats {task.repeatRule.repeat}</Text>
+            <Text style={{fontSize:14}}>{repeatText(task.repeatRule)}</Text>
           </View>)
         : null
     )

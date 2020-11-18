@@ -61,9 +61,44 @@ export const setupTasks = () => {
   }
 }
 
+const getRecurrentRule = (repeatRule) =>{
+  const rule = {frequency: repeatRule.repeat}
+  const weekDays = [
+    'Sunday', 'Monday','Tuesday', 'Wednesday','Thurday', 'Friday', 'Saturday'
+  ]
+  if ( repeatRule.repeat === 'daily') {
+    rule.interval = repeatRule.interval
+    if ( repeatRule.until ){
+      rule.endDate = new Date(repeatRule.until)// new Date('2020-11-20') // create UTC datetime
+    }
+  }else if ( repeatRule.repeat === 'weekly' ){
+    rule.interval = repeatRule.interval
+    rule.daysOfTheWeek = repeatRule.onDays.map ( day => ({dayOfTheWeek: weekDays.findIndex(d=>d===day)+1}))
+    if ( repeatRule.until ){
+      rule.endDate = new Date(repeatRule.until)
+    }
+  }else if ( repeatRule.repeat === 'monthly' ){
+    rule.interval = repeatRule.interval
+    rule.daysOfTheMonth = repeatRule.onDays.map ( day => parseInt(day,10))
+    if ( repeatRule.until ){
+      rule.endDate = new Date(repeatRule.until)
+    }
+  }
+  else if ( repeatRule.repeat === 'yearly' ){
+    rule.interval = repeatRule.interval
+    if ( repeatRule.until ){
+      rule.endDate = new Date(repeatRule.until) 
+    }
+  }
+  // recurrenRule works in expo for weekly. But looks not working for monthly
+  console.log ('recurrentRule: ', rule)
+  return rule
+}
+
 export const addTask = (task) => {
   return async ( dispatch ) => {
     try {
+      
       const taskId = await ExpoCalendar.createEventAsync(
         task.calendarId,
         {
@@ -75,10 +110,10 @@ export const addTask = (task) => {
           notes: task.notes,
           timeZone: task.timeZone,
           location: task.locationAddress.address,
-          recurrenceRule: {frequency: task.repeatRule.repeat}
+          recurrenceRule: getRecurrentRule (task.repeatRule)
         }
       )
-      console.log('ExpoCalendar.Frequency:',ExpoCalendar.Frequency)
+      //console.log('ExpoCalendar.Frequency:',ExpoCalendar.Frequency)
       const tasksString = await AsyncStorage.getItem(SUNNYDAY_TASKS);
       const tasks = JSON.parse (tasksString)
       tasks.taskList.push ({...task, ID:taskId})

@@ -7,7 +7,7 @@ import {View,
 from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
 
-//currentInterval = {mode: 'daily', current: 1, interval: [...]}
+//currentInterval = {mode: 'daily', value: 1, list: [...]}
 
 const TaskRepeatIntervalSC = (props) =>{
   const {navigation, route} = props
@@ -16,16 +16,19 @@ const TaskRepeatIntervalSC = (props) =>{
     return (
       <TouchableOpacity style={styles.item}
         key={index}
-        onPress={()=>{navigation.navigate('TaskRepeatSC', {currentInterval: {mode: currentInterval.mode, current: index+1}})}}
+        onPress={() => {navigation.navigate(
+          'TaskRepeatSC', 
+          {currentInterval: {mode: currentInterval.mode, value: index+1}}
+        )}}
       >
         <Text style={{fontSize:14}}>{item}</Text>
-        {index === currentInterval.current-1 && 
+        {index === currentInterval.value-1 && 
           <AntDesign name="check" size={24} color="blue" />}
       </TouchableOpacity>
     )
   }
   const displayAlarmItems = () =>{
-    return currentInterval.interval.map (
+    return currentInterval.list.map (
       (item, index) => itemView(index,item)
     )  
   }

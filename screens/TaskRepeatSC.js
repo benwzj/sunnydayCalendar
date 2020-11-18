@@ -42,6 +42,7 @@ const TaskRepeatSC = (props) =>{
     {repeat: 'monthly', text:'Monthly', interval: 1, onDays: [moment(selectedDate).format('D')], until: null},
     {repeat: 'yearly', text:'Yearly', interval: 1, until: null},
   ]
+  //console.log( 'repeatRule: ', repeatRule)
   //console.log( 'currentRepeatRule: ', currentRepeatRule)
   useEffect (()=>{
     navigation.setOptions ({ 
@@ -59,14 +60,17 @@ const TaskRepeatSC = (props) =>{
   },[navigation, currentRepeatRule])
 
   useEffect (()=>{
-    setCurrentRepeatRule (currentRule=>({...currentRule, interval:currentInterval.current}))
+    //console.log( 'useEffect currentInterval:',currentInterval)
+    setCurrentRepeatRule (currentRule=>({...currentRule, interval:currentInterval.value}))
   },[currentInterval])
 
   useEffect (()=>{
+    //console.log( 'useEffect repeatUntilDate:',repeatUntilDate)
     setCurrentRepeatRule (currentRule=>({...currentRule, until:repeatUntilDate}))
   },[repeatUntilDate])
 
   useEffect (()=>{
+    //console.log( 'useEffect onDaysRule:',onDaysRule)
     setCurrentRepeatRule (currentRule=>({...currentRule, onDays:onDaysRule.days}))
   },[onDaysRule])
 
@@ -91,8 +95,11 @@ const TaskRepeatSC = (props) =>{
       <TouchableOpacity style={styles.item}
         onPress={()=>{navigation.navigate(
           'TaskRepeatUntilSC', 
-          {repeatUntilDate: currentRepeatRule.until})
-        }}
+          {
+            repeatUntilDate: currentRepeatRule.until,
+            selectedDate
+          }
+        )}}
       >
         <Text style={{fontSize:14}}>Until</Text>
         <ItemChevron text={date? moment(date).format('ddd, D MMM'): 'Forever'} />
@@ -122,7 +129,7 @@ const TaskRepeatSC = (props) =>{
           <TouchableOpacity style={styles.item}
             onPress={()=>{navigation.navigate(
               'TaskRepeatIntervalSC', 
-              {currentInterval: {current:item.interval, interval:dailyInterval}})
+              {currentInterval: {value:item.interval, list:dailyInterval}})
             }}
           >
             <Text style={{fontSize:14}}>Interval</Text>
@@ -138,7 +145,7 @@ const TaskRepeatSC = (props) =>{
           <TouchableOpacity style={styles.item}
             onPress={()=>{navigation.navigate(
               'TaskRepeatIntervalSC', 
-              {currentInterval: {current:item.interval, interval:weeklyInterval}})
+              {currentInterval: {value:item.interval, list:weeklyInterval}})
             }}
           >
             <Text style={{fontSize:14}}>Interval</Text>
@@ -162,7 +169,7 @@ const TaskRepeatSC = (props) =>{
           <TouchableOpacity style={styles.item}
             onPress={()=>{navigation.navigate(
               'TaskRepeatIntervalSC', 
-              {currentInterval: {current:item.interval, interval:monthlyInterval}})
+              {currentInterval: {value:item.interval, list:monthlyInterval}})
             }}
           >
             <Text style={{fontSize:14}}>Interval</Text>
@@ -186,7 +193,7 @@ const TaskRepeatSC = (props) =>{
           <TouchableOpacity style={styles.item}
             onPress={()=>{navigation.navigate(
               'TaskRepeatIntervalSC', 
-              {currentInterval: {current:item.interval, interval:yearlyInterval}})
+              {currentInterval: {value:item.interval, list:yearlyInterval}})
             }}
           >
             <Text style={{fontSize:14}}>Interval</Text>

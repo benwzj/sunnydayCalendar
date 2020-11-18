@@ -341,7 +341,13 @@ const TaskCreateSC =(props) => {
       }}
       onPress = {() => navigation.navigate (
         'TaskRepeatSC', 
-        {selectedDate, repeatRule}
+        {
+          selectedDate: moment(taskStartDateTime).format('YYYY-MM-DD'), 
+          repeatRule,
+          currentInterval: {mode:repeatRule.repeat, value:repeatRule.interval}, 
+          repeatUntilDate: repeatRule.until,
+          onDaysRule: {mode: repeatRule.repeat, days: repeatRule.onDays},
+        }
       )}
       
     >
