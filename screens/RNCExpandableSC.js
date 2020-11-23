@@ -47,7 +47,7 @@ const ITEMS = [
   {title: dates[10], data: [{hour: '12am', duration: '1h', title: 'Last Yoga'}]}
 ];
 
-export default class ExpandableCalendarScreen extends Component {
+export default class RNCExpandableSC extends Component {
 
   onDateChanged = (/* date, updateSource */) => {
     // console.warn('ExpandableCalendarScreen onDateChanged: ', date, updateSource);

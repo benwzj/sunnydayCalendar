@@ -1,39 +1,40 @@
-import React, {useEffect} from 'react'
-import { View, StyleSheet, Button } from 'react-native'
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { useDispatch } from 'react-redux'
+import React, { useEffect } from 'react';
+import { StyleSheet, Button } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useDispatch } from 'react-redux';
 
-import {askCalendarPermission} from './store/actions/calendars'
-import ExpoCalendarListSC from './screens/ExpoCalendarListSC'
-import ExpoCalendarDetailSC from './screens/ExpoCalendarDetailSC'
-import RNCAgendaSC from './screens/RNCAgendaSC'
-import RNCExpandableSC from './screens/RNCExpandableSC'
-import TaskHomeSC from './screens/TaskHomeSC'
-import TaskCreateSC from './screens/TaskCreateSC'
-import TaskDetailSC from './screens/TaskDetailSC'
-import TaskAlarmSC from './screens/TaskAlarmSC'
-import TaskRepeatSC from './screens/TaskRepeatSC'
-import TaskRepeatIntervalSC from './screens/TaskRepeatIntervalSC'
-import TaskRepeatUntilSC from './screens/TaskRepeatUntilSC'
-import TaskRepeatOnDaysSC from './screens/TaskRepeatOnDaysSC'
-import TaskLocationSC from './screens/TaskLocationSC'
-import MapSC from './screens/MapSC'
+import { askCalendarPermission } from './store/actions/calendars';
+import ExpoCalendarListSC from './screens/ExpoCalendarListSC';
+import ExpoCalendarDetailSC from './screens/ExpoCalendarDetailSC';
+import RNCAgendaSC from './screens/RNCAgendaSC';
+// eslint-disable-next-line import/no-named-as-default-member
+import RNCExpandableSC from './screens/RNCExpandableSC';
+import TaskHomeSC from './screens/TaskHomeSC';
+import TaskCreateSC from './screens/TaskCreateSC';
+import TaskDetailSC from './screens/TaskDetailSC';
+import TaskAlarmSC from './screens/TaskAlarmSC';
+import TaskRepeatSC from './screens/TaskRepeatSC';
+import TaskRepeatIntervalSC from './screens/TaskRepeatIntervalSC';
+import TaskRepeatUntilSC from './screens/TaskRepeatUntilSC';
+import TaskRepeatOnDaysSC from './screens/TaskRepeatOnDaysSC';
+import TaskLocationSC from './screens/TaskLocationSC';
+import MapSC from './screens/MapSC';
 
 const Stack = createStackNavigator();
 const ExpoCalendarNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen 
-        name = 'ExpoCalendarListSC'
-        component = {ExpoCalendarListSC}
-        options = {{title: 'Calendars List'}}
+        name='ExpoCalendarListSC'
+        component={ExpoCalendarListSC}
+        options={{title: 'Calendars List'}}
       />
       <Stack.Screen 
-        name = 'ExpoCalendarDetailSC'
-        component = {ExpoCalendarDetailSC}
-        options = {({ route }) => ({ 
+        name='ExpoCalendarDetailSC'
+        component={ExpoCalendarDetailSC}
+        options={({ route }) => ({ 
           title: route.params.calendarTitle,
         })}
       />
@@ -80,7 +81,7 @@ const TasksNavigator = () =>{
         options = {{title: 'Create Task' }}
         initialParams = {{ 
           alarmTime: {time: -15, text:'15 minutes before'},
-          repeatRule: {repeat: '', test: 'NONE'},
+          repeatRule: {repeat: '', text: 'None'},
           locationAddress: {selected: false, location:{lat:0, lng:0}, address:''} 
         }}
       />

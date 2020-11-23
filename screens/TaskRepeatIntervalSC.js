@@ -1,61 +1,71 @@
-import React from 'react'
-import {View, 
-  ScrollView, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity} 
-from 'react-native'
+import React from 'react';
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+}
+  from 'react-native';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { AntDesign } from '@expo/vector-icons';
 
-//currentInterval = {mode: 'daily', value: 1, list: [...]}
+// currentInterval = {mode: 'daily', value: 1, list: [...]}
 
-const TaskRepeatIntervalSC = (props) =>{
-  const {navigation, route} = props
-  const {currentInterval} = route.params
-  const itemView = (index, item) =>{
-    return (
-      <TouchableOpacity style={styles.item}
-        key={index}
-        onPress={() => {navigation.navigate(
-          'TaskRepeatSC', 
-          {currentInterval: {mode: currentInterval.mode, value: index+1}}
-        )}}
-      >
-        <Text style={{fontSize:14}}>{item}</Text>
-        {index === currentInterval.value-1 && 
-          <AntDesign name="check" size={24} color="blue" />}
-      </TouchableOpacity>
-    )
-  }
-  const displayAlarmItems = () =>{
-    return currentInterval.list.map (
-      (item, index) => itemView(index,item)
-    )  
-  }
+const TaskRepeatIntervalSC = (props) => {
+  const { navigation, route } = props;
+  const { currentInterval } = route.params;
+  const itemView = (index, item) => (
+    <TouchableOpacity
+      style={styles.item}
+      key={index}
+      onPress={() => {
+        navigation.navigate(
+          'TaskRepeatSC',
+          { currentInterval: { mode: currentInterval.mode, value: index + 1 } },
+        );
+      }}
+    >
+      <Text style={styles.textSize}>{item}</Text>
+      {index === currentInterval.value - 1
+          && <AntDesign name="check" size={24} color="blue" />}
+    </TouchableOpacity>
+  );
+  const displayAlarmItems = () => currentInterval.list.map(
+    (item, index) => itemView(index, item),
+  );
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View style={{paddingTop: 40}}>
+        <View style={styles.topPadding}>
           {displayAlarmItems()}
         </View>
       </ScrollView>
     </View>
-  )
-}
+  );
+};
+
+const ROW_BACKGROUND_COLOR = 'white';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   item: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between',
     alignItems: 'center',
-    height: 34, 
-    width: "100%",
-    backgroundColor: 'white',
-    paddingHorizontal: 20, 
-    marginVertical: 1
-  }
-})
+    backgroundColor: ROW_BACKGROUND_COLOR,
+    flexDirection: 'row',
+    height: 34,
+    justifyContent: 'space-between',
+    marginVertical: 1,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
+  topPadding: {
+    paddingTop: 40,
+  },
+  textSize: {
+    fontSize: 14,
+  },
+});
 
-export default TaskRepeatIntervalSC
+export default TaskRepeatIntervalSC;

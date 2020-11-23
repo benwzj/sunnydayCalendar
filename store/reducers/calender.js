@@ -13,7 +13,7 @@ Object {
     "title": "Calendar title(08404900765208079)",
     "type": "local",
   },
-*/
+*/ 
 
 import { 
   SETUP_CALENDARS, 
