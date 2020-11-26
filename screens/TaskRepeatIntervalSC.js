@@ -60,11 +60,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     width: '100%',
   },
-  topPadding: {
-    paddingTop: 40,
-  },
   textSize: {
     fontSize: 14,
+  },
+  topPadding: {
+    paddingTop: 40,
   },
 });
 

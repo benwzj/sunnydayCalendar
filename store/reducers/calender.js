@@ -13,40 +13,46 @@ Object {
     "title": "Calendar title(08404900765208079)",
     "type": "local",
   },
-*/ 
+*/
 
-import { 
-  SETUP_CALENDARS, 
-  DELETE_CALENDAR, 
+import {
+  SETUP_CALENDARS,
+  DELETE_CALENDAR,
   ADD_CALENDAR,
-  ASK_CALENDAR_PERMISSTION } from '../actions/calendars'
+  ASK_CALENDAR_PERMISSTION,
+} from '../actions/calendars';
 
 const initialState = {
   array: [],
   permission: {
     statusCale: '',
-    statusRemi: ''
-  }
+    statusRemi: '',
+  },
 };
 
-export const calendarsReducer = (state = initialState, action) =>{
-  switch ( action.type ){
+// eslint-disable-next-line import/prefer-default-export
+export const calendarsReducer = (state = initialState, action) => {
+  switch (action.type) {
     case SETUP_CALENDARS:
     case DELETE_CALENDAR:
     case ADD_CALENDAR:
-      const calendars = action.payload
-      //console.log('reducer -- inside',calendars)
+    {
+      const calendars = action.payload;
+      // console.log('reducer -- inside',calendars)
 
-      if ( calendars ){
-        return { ...state, array: calendars }
+      if (calendars) {
+        return { ...state, array: calendars };
       }
-      return state
+      return state;
+    }
     case ASK_CALENDAR_PERMISSTION:
       return {
         ...state,
-        permission: action.payload
-      }
-    default: 
-      return state
+        permission: action.payload,
+      };
+    default:
+      return state;
   }
-}
+};
+
+// export default calendarsReducer;

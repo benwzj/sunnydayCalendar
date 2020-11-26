@@ -1,37 +1,46 @@
-import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
-import { Ionicons } from '@expo/vector-icons'
+// eslint-disable-next-line import/no-extraneous-dependencies
+// import { Ionicons } from '@expo/vector-icons';
 
-const ItemChevron = (props) =>{
-  const {text} = props
+const ItemChevron = (props) => {
+  const { text } = props;
   return (
-    <View 
-      style = {styles.container}
+    <View
+      style={styles.container}
     >
-      {(text || text==='') && <Text style={styles.text}>{text}</Text>}
-      <Ionicons name="ios-arrow-forward" size={16} color="grey" />
+      <Text style={styles.text}>
+        {text}
+        {' '}
+        ❭
+      </Text>
+      {/* <Ionicons name="ios-arrow-forward" size={16} color="grey" /> */}
     </View>
-  )
-}
+  );
+};
 ItemChevron.propTypes = {
   text: PropTypes.string,
 };
+ItemChevron.defaultProps = {
+  text: '',
+};
 
-const styles = StyleSheet.create ({
+const TEXT_COLOR = '#999';
+const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
-    position: "absolute",
-    right: 10
+    position: 'absolute',
+    right: 10,
   },
   text: {
-    paddingHorizontal: 12, 
-    color:'grey', 
-    fontSize: 16
-  }
-})
+    color: TEXT_COLOR,
+    fontSize: 16,
+    fontWeight: 'bold',
+    paddingHorizontal: 12,
+  },
+});
 
-export default ItemChevron
-
+export default ItemChevron;

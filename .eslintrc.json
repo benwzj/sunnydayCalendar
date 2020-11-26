@@ -31,9 +31,10 @@
         "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
         "no-use-before-define": [2, { "functions": true, "classes": true, "variables": false }],
         "react/prop-types": 0,
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "warn",
+        "react-hooks/rules-of-hooks": 2,
+        "react-hooks/exhaustive-deps": 1,
         "react/jsx-props-no-spreading": 0,
-        "no-param-reassign": 0
+        "no-param-reassign": 0,
+        "no-unused-vars": 1
     }
 }

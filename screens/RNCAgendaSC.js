@@ -1,24 +1,26 @@
-import React, {useState} from 'react';
-import {Alert, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {Agenda} from 'react-native-calendars';
-import {Avatar} from 'react-native-paper'
+import React, { useState } from 'react';
+import {
+  Alert, StyleSheet, Text, View, TouchableOpacity,
+} from 'react-native';
+import { Agenda } from 'react-native-calendars';
+import { Avatar } from 'react-native-paper';
 
 const testIDs = {
   agenda: {
     CONTAINER: 'agenda',
-    ITEM: 'item'
-  }
-}
+    ITEM: 'item',
+  },
+};
 
 const RNCAgendaSC = () => {
-  const [items, setItems] = useState ({
-    '2012-05-22': [{name: 'item 1 - any js object'}],
-    '2012-05-23': [{name: 'item 2 - any js object', height: 120}],
-    //'2012-05-24': [],
-    '2012-05-25': [{name: 'item 3 - any js object', size: 100}, {name: 'any js object'}]
-  })
+  const [items, setItems] = useState({
+    '2012-05-22': [{ name: 'item 1 - any js object' }],
+    '2012-05-23': [{ name: 'item 2 - any js object', height: 120 }],
+    // '2012-05-24': [],
+    '2012-05-25': [{ name: 'item 3 - any js object', size: 100 }, { name: 'any js object' }],
+  });
 
-  const loadItems = (day) =>{
+  const loadItems = (day) => {
     // setTimeout(() => {
     //   for (let i = -15; i < 85; i++) {
     //     const time = day.timestamp + i * 24 * 60 * 60 * 1000;
@@ -38,51 +40,45 @@ const RNCAgendaSC = () => {
     //   Object.keys(items).forEach(key => {newItems[key] = items[key];});
     //   setItems(newItems)
     // }, 1000);
-    //console.log( day )
+    // console.log( day )
     // setItems ({
     //   '2012-05-22': [{name: 'item 1 - any js object'}],
     //   '2012-05-23': [{name: 'item 2 - any js object', height: 120}],
     //   //'2012-05-24': [],
     //   '2012-05-25': [{name: 'item 3 - any js object', size: 100}, {name: 'any js object'}]
     // })
-  }
+  };
 
-  const renderItem = (item) => {
-    return (
-      <TouchableOpacity
-        testID={testIDs.agenda.ITEM}
-        style={[styles.item, {height: item.height}]} 
-        onPress={() => Alert.alert(item.name)}
-      >
-        <Text>{item.name}</Text>
-        <Avatar.Text size={34} label="W" />
-      </TouchableOpacity>
-    )
-  }
+  const renderItem = (item) => (
+    <TouchableOpacity
+      testID={testIDs.agenda.ITEM}
+      style={[styles.item, { height: item.height }]}
+      onPress={() => Alert.alert(item.name)}
+    >
+      <Text>{item.name}</Text>
+      <Avatar.Text size={34} label="W" />
+    </TouchableOpacity>
+  );
 
-  const renderEmptyDate =() => {
-    return (
-      <View style={styles.emptyDate}>
-        <Text>This is empty date!</Text>
-      </View>
-    );
-  }
+  const renderEmptyDate = () => (
+    <View style={styles.emptyDate}>
+      <Text>This is empty date!</Text>
+    </View>
+  );
 
-  const dayClick = (day) =>{
-    setItems (items=>({
-      ...items, 
-      [day.dateString]:[{name: `new item for ${day.dateString}`}]
-    }))
-    //console.log( items )
-  }
-  const rowHasChanged = (r1, r2) =>{
-    return r1.name !== r2.name
-  }
+  const dayClick = (day) => {
+    setItems((items) => ({
+      ...items,
+      [day.dateString]: [{ name: `new item for ${day.dateString}` }],
+    }));
+    // console.log( items )
+  };
+  const rowHasChanged = (r1, r2) => r1.name !== r2.name;
 
-  const timeToString = (time) =>{
+  const timeToString = (time) => {
     const date = new Date(time);
     return date.toISOString().split('T')[0];
-  }
+  };
 
   return (
     <Agenda
@@ -90,20 +86,25 @@ const RNCAgendaSC = () => {
       items={items}
       loadItemsForMonth={loadItems}
       // Callback that fires when the calendar is opened or closed
-      onCalendarToggled={(calendarOpened) => {console.log('calendarOpened: ',calendarOpened)}}
+      onCalendarToggled={(calendarOpened) => { console.log('calendarOpened: ', calendarOpened); }}
       // Callback that gets called on day press
       onDayPress={dayClick}
       // Callback that gets called when day changes while scrolling agenda list
-      onDayChange={(day)=>{console.log('day changed', day)}}
+      onDayChange={(day) => { console.log('day changed', day); }}
       selected={timeToString(new Date())}
       renderItem={renderItem}
       renderEmptyDate={renderEmptyDate}
       rowHasChanged={rowHasChanged}
     />
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
+  emptyDate: {
+    flex: 1,
+    height: 15,
+    paddingTop: 30,
+  },
   item: {
     backgroundColor: 'white',
     flex: 1,
@@ -112,13 +113,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
-    marginTop: 17
+    marginTop: 17,
   },
-  emptyDate: {
-    height: 15,
-    flex:1,
-    paddingTop: 30
-  }
 });
 
-export default RNCAgendaSC
+export default RNCAgendaSC;
