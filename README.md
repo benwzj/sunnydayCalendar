@@ -5,6 +5,7 @@ yarn start
 
 
 first object structure: 
+```json
 tasks{
   permission: {
     statusCale: '',
@@ -28,8 +29,9 @@ tasks{
     },
   ],
 }
-
+```
 second object structure: 
+```json
 tasks{
   permission: {
     statusCale: '',
@@ -53,8 +55,9 @@ tasks{
     },
   ],
 }
-
+```
 section structure:
+```javascript
 {
   title: '2020-10-18', 
   data: [
@@ -72,3 +75,4 @@ section structure:
 
 locationAddress = {selected: false, location: {lat:0, lng:0}, address:''}
 alertTime = {time: 1, text:'None'},
+```
